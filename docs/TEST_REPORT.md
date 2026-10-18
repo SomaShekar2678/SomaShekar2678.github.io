@@ -13,15 +13,14 @@ Environment: Ubuntu Linux (6.8 kernel), Node 24.22.0 LTS, Google Chrome (system 
 | E2E — desktop 1440×900 | `npx playwright test --project=desktop` | ✅ 25 / 25 passed |
 | E2E — mobile (Pixel 7 emulation) | `npx playwright test --project=mobile` | ✅ 22 passed, 3 skipped (keyboard-only and desktop-only tests, by design) |
 
-#### Against the live deployment (https://somashekar2678.github.io/) — v1, before the redesign
+#### Against the live deployment (https://somashekar2678.github.io/), after commit 16aebb7
 
 | Check | Result |
 |---|---|
 | GitHub Actions deploy run (type-check, lint, unit tests, build, publish) | ✅ success |
-| HTTP checks: `/`, OG image, résumé PDF, robots, sitemap, icons, certificate images | ✅ 200 with correct content types; unknown path → 404 page |
-| Built bundle served (not raw source); canonical URL present | ✅ |
-| `BASE_URL=… npx playwright test --project=desktop` | ✅ 24 / 24 passed (including the journey, after commit 300fe5a) |
-| `BASE_URL=… npx playwright test --project=mobile` | ✅ 21 passed, 3 skipped |
+| Live HTML carries the new theme colour; covers served as `image/webp` (200) | ✅ |
+| `BASE_URL=… npx playwright test --project=desktop` | ✅ 25 / 25 passed |
+| `BASE_URL=… npx playwright test --project=mobile` | ✅ 22 passed, 3 skipped |
 
 ## What the unit tests cover
 
@@ -33,7 +32,7 @@ Environment: Ubuntu Linux (6.8 kernel), Node 24.22.0 LTS, Google Chrome (system 
 
 ### What the end-to-end tests cover (each viewport)
 
-All sections render with **no console errors, page errors, failed requests or HTTP ≥ 400**; no horizontal overflow; skip link → `main` focus; menu is a modal dialog (opens, Escape closes, link navigates and scrolls); expertise signal-chain tabs with arrow keys; **all 8 case studies** render 11 chapters with no errors; card → case study → back; not-found routes; all external links `target=_blank rel=noopener`; mailto present; résumé PDF served (200, `application/pdf`); every `#/work/` link resolves; certificate images load; lab controls change the model (method, preset, keyboard slider, reset) and the "Compare methods" view draws three beamformers; all five rendered covers load with "illustrative render" alt text; reduced motion leaves headlines unmasked and covers unhidden; `?webgl=0` fallback shows the pre-rendered hero still with no errors; **axe-core WCAG 2.1 AA audit** of home and a case study (0 serious or critical violations); the signal's journey advances through its stages on scroll (desktop), its skip link works, the full story is exposed to screen readers, and it falls back to panels without WebGL and on phones.
+All sections render with **no console errors, page errors, failed requests or HTTP ≥ 400**; no horizontal overflow; skip link → `main` focus; menu is a modal dialog (opens, Escape closes, link navigates and scrolls); expertise signal-chain tabs with arrow keys; **all 8 case studies** render 11 chapters with no errors; card → case study → back; not-found routes; all external links `target=_blank rel=noopener`; mailto present; résumé PDF served (200, `application/pdf`); every `#/work/` link resolves; certificate images load; lab controls change the model (method, preset, keyboard slider, reset) and the "Compare methods" view draws three beamformers; all five rendered covers load with "illustrative render" alt text; reduced motion leaves headlines unmasked and covers unhidden; `?webgl=0` fallback shows the pre-rendered hero still with no errors; **axe-core WCAG 2.1 AA audit** of home and a case study (0 serious or critical violations); the signal's journey advances through its stages on scroll and its canvas keeps drawing frames (desktop), its skip link works, the full story is exposed to screen readers, and it falls back to panels without WebGL and on phones.
 
 ## Visual inspection performed (v2)
 
@@ -59,6 +58,7 @@ All sections render with **no console errors, page errors, failed requests or HT
 - career-ruler labels colliding on phones;
 - the wordmark colliding with page text when scrolled;
 - the dark-navy globe fill on the copper chapter;
+- the journey's 3D scene frozen on its first frame in production builds (found in the live overview screenshots; see DECISIONS);
 - a washed-out terrain cover.
 
 ## Performance (measured)

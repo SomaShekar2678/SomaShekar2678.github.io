@@ -58,6 +58,7 @@ The owner judged v1 generic: AI-generated in feel, black everywhere, nowhere nea
 - **Headline word spacing.** It collapsed because the space sat inside an inline-block, where trailing spaces are removed. It is now outside.
 - **Covers never revealing or loading.** Chrome's IntersectionObserver, and native lazy loading with it, treats a fully `clip-path`-clipped element as invisible. A duplicated CSS block (from a scripted edit) had left such a clip in place. Covers now load through our own observer, and the reveal uses a panel over the image instead of clipping it.
 - **Tablet portrait.** The satellite overlapped the statement, so the hero uses the stacked phone order on portrait tablets, with per-aspect camera offsets.
+- **Journey frozen in production since it shipped.** The captions advanced but the 3D scene never rendered past its first frame. At load the section sits exactly one viewport down, which the IntersectionObserver reports as an edge intersection *before* the scene module has loaded, so no later callback ever started the loop. React StrictMode's double mount hid it in development. Visibility is now derived from the scroll measurement on every update. The e2e test counts frames drawn on the journey canvas: it was confirmed to fail against the old live build (2 frames) and to pass with the fix.
 
 ## Stack
 

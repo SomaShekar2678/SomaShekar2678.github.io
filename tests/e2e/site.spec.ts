@@ -234,6 +234,19 @@ test.describe('signal journey', () => {
   test('immersive on desktop: scrolling advances the stages; skip link works', async ({ page }, info) => {
     test.skip(info.project.name === 'mobile', 'phones get the static panels')
     const problems = watch(page)
+    // Count frames the journey canvas actually draws, so a stalled render loop fails the test
+    // (captions alone advanced while the 3D scene was frozen once).
+    await page.addInitScript(() => {
+      const w = window as unknown as { __journeyFrames: number }
+      w.__journeyFrames = 0
+      for (const C of [WebGLRenderingContext, WebGL2RenderingContext]) {
+        const clear = C.prototype.clear
+        C.prototype.clear = function (this: WebGLRenderingContext, mask: number) {
+          if ((this.canvas as HTMLCanvasElement).closest?.('#journey')) w.__journeyFrames++
+          return clear.call(this, mask)
+        }
+      }
+    })
     await ready(page)
     const section = page.locator('#journey')
     await expect(section.locator('canvas')).toHaveCount(1)
@@ -244,6 +257,10 @@ test.describe('signal journey', () => {
       await page.evaluate((y) => window.scrollTo(0, y), box.top + span * f)
       await expect(title(i)).toHaveAttribute('data-active', { timeout: 5000 })
     }
+    const frames = () => page.evaluate(() => (window as unknown as { __journeyFrames: number }).__journeyFrames)
+    const before = await frames()
+    await page.waitForTimeout(1000)
+    expect(await frames()).toBeGreaterThan(before + 5)
     // The full story is available to screen readers regardless of scroll position.
     await expect(section.locator('ol.sr-only > li')).toHaveCount(6)
     await page.evaluate((y) => window.scrollTo(0, y), box.top + 10)

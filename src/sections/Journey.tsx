@@ -49,16 +49,23 @@ function JourneyImmersive({ onFail }: { onFail: () => void }) {
         scene = new JourneyScene({ canvas, tier: deviceTier(), onContextLost: fail })
         sceneRef.current = scene
         update()
-        // The IntersectionObserver may have fired before the module loaded; sync visibility now.
-        onVis()
       })
       .catch(fail)
 
     let raf = 0
     let lastActive = -1
+    let lastVisible: boolean | null = null
     const update = () => {
       raf = 0
       const r = section.getBoundingClientRect()
+      // Visibility is derived from the same measurement on every update. Relying on the observer alone
+      // deadlocked in production: at load the section sits exactly one viewport down, which counts as an
+      // (edge) intersection before the scene module exists, so no later callback ever started the loop.
+      const visible = !document.hidden && r.bottom > 0 && r.top < window.innerHeight
+      if (sceneRef.current && visible !== lastVisible) {
+        lastVisible = visible
+        sceneRef.current.setVisible(visible)
+      }
       // Aperture: while the section rises into view, the dark stage is revealed through a widening circle.
       const stage = stageRef.current
       if (stage) {
@@ -86,11 +93,9 @@ function JourneyImmersive({ onFail }: { onFail: () => void }) {
     }
     window.addEventListener('scroll', onScroll, { passive: true })
     window.addEventListener('resize', onScroll)
-    const io = new IntersectionObserver(([e]) => sceneRef.current?.setVisible(!!e?.isIntersecting && !document.hidden))
-    io.observe(section)
     const onVis = () => {
-      const r = section.getBoundingClientRect()
-      sceneRef.current?.setVisible(!document.hidden && r.bottom > 0 && r.top < window.innerHeight)
+      lastVisible = null
+      update()
     }
     document.addEventListener('visibilitychange', onVis)
     const ro = new ResizeObserver(() => sceneRef.current?.resize())
@@ -106,7 +111,6 @@ function JourneyImmersive({ onFail }: { onFail: () => void }) {
       window.removeEventListener('resize', onScroll)
       window.removeEventListener('pointermove', onMove)
       document.removeEventListener('visibilitychange', onVis)
-      io.disconnect()
       ro.disconnect()
       scene?.dispose()
       sceneRef.current = null
