@@ -2,7 +2,12 @@
 
 **Live:** https://somashekar2678.github.io/
 
-Portfolio of an AI/ML engineer working across GNSS anti-jamming, array signal processing, FPGA acceleration, perception and prognostics. A single-page React app with a real-time Three.js hero, an interactive beamforming lab, and evidence-backed case studies.
+Portfolio of an AI/ML engineer working across GNSS anti-jamming, array signal processing, FPGA acceleration, perception and prognostics. A single-page React app with:
+
+- a real-time Three.js hero;
+- a scroll-driven 3D "signal's journey" through six worlds (orbit → interference → adaptive array → FPGA → perception → position fix);
+- an interactive beamforming lab;
+- evidence-backed case studies.
 
 Every visual that shows numbers is computed from a stated mathematical model in the browser (steering vectors, MVDR/LCMV weights, MUSIC, GPS C/A Gold codes) and is labelled illustrative.
 
@@ -43,6 +48,7 @@ All personal and project facts live in `src/content/`. Components never hard-cod
 | `src/content/projects.ts` | Project case studies (11-part structure), statuses and their definitions |
 | `src/content/expertise.ts` | Six domains, each method tagged studied / simulated / implemented / deployed |
 | `src/content/site.ts` | Section order and labels, India section copy |
+| `src/content/journey.ts` | Captions for the six stages of the signal's journey |
 
 `tests/unit/content.test.ts` enforces the evidence rules: valid statuses, evidence on every project, sources on every metric, https-only links, no rendered phone number, no leftover placeholders.
 
@@ -84,6 +90,7 @@ Without `SITE_URL`, no canonical URL or sitemap is generated, so a guessed domai
 
 ## Browser support and fallbacks
 
+- Phones, reduced motion and no WebGL: the signal's journey becomes six static illustrated panels with the same text.
 - No WebGL, or a lost context: the hero shows a static, computed SVG beam pattern. The lab keeps its 2D sky maps and hides the 3D tab. Test with `?webgl=0`.
 - `prefers-reduced-motion`: no smooth scrolling, reveals or scroll-scrubbing, and the 3D scene renders only on interaction. Test with `?motion=0`.
 - Without JavaScript, a `<noscript>` summary with contact links is shown.

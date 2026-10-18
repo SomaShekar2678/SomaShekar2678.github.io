@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { Hero } from '../sections/Hero'
+import { Journey } from '../sections/Journey'
 import { About } from '../sections/About'
 import { Expertise } from '../sections/Expertise'
 import { Work } from '../sections/Work'
@@ -18,6 +19,7 @@ export function Home() {
   return (
     <>
       <Hero />
+      <Journey />
       <About />
       <Expertise />
       <Work />

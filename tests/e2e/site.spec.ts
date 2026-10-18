@@ -205,3 +205,34 @@ test('accessibility audit (axe) — case study', async ({ page }) => {
   const serious = results.violations.filter((v) => v.impact === 'serious' || v.impact === 'critical')
   expect(serious.map((v) => `${v.id}: ${v.nodes.length} × ${v.nodes[0]?.target.join(' ')}`)).toEqual([])
 })
+
+test.describe('signal journey', () => {
+  test('immersive on desktop: scrolling advances the stages; skip link works', async ({ page }, info) => {
+    test.skip(info.project.name === 'mobile', 'phones get the static panels')
+    const problems = watch(page)
+    await ready(page)
+    const section = page.locator('#journey')
+    await expect(section.locator('canvas')).toHaveCount(1)
+    const box = await section.evaluate((el) => ({ top: el.getBoundingClientRect().top + window.scrollY, h: el.getBoundingClientRect().height }))
+    const span = box.h - 900
+    const title = (i: number) => section.locator('ol[aria-hidden] > li').nth(i)
+    for (const [f, i] of [[0.05, 0], [0.38, 2], [0.95, 5]] as const) {
+      await page.evaluate((y) => window.scrollTo(0, y), box.top + span * f)
+      await expect(title(i)).toHaveAttribute('data-active', { timeout: 5000 })
+    }
+    // The full story is available to screen readers regardless of scroll position.
+    await expect(section.locator('ol.sr-only > li')).toHaveCount(6)
+    await page.evaluate((y) => window.scrollTo(0, y), box.top + 10)
+    await section.getByRole('link', { name: /Skip the journey/ }).click()
+    await expect(page.locator('#about-title')).toBeInViewport({ timeout: 5000 })
+    expect(problems).toEqual([])
+  })
+
+  test('static panels when WebGL is unavailable or on phones', async ({ page }, info) => {
+    await ready(page, info.project.name === 'mobile' ? '/' : '/?webgl=0')
+    const section = page.locator('#journey')
+    await expect(section.locator('canvas')).toHaveCount(0)
+    await expect(section.locator('ol[role="list"] > li')).toHaveCount(6)
+    await expect(section.getByRole('heading', { level: 3, name: 'The array adapts' })).toBeAttached()
+  })
+})

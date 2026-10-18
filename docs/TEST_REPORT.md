@@ -8,10 +8,10 @@ Environment: Ubuntu Linux (6.8 kernel), Node 24.22.0 LTS, Google Chrome (system 
 |---|---|---|
 | TypeScript (strict) | `npm run typecheck` | ✅ 0 errors |
 | ESLint | `npm run lint` | ✅ 0 problems |
-| Unit tests | `npm test` | ✅ 34 / 34 passed (4 files) |
+| Unit tests | `npm test` | ✅ 39 / 39 passed (5 files) |
 | Production build | `npm run build` | ✅ built |
-| E2E — desktop 1440×900 | `npx playwright test --project=desktop` | ✅ 22 / 22 passed |
-| E2E — mobile (Pixel 7 emulation) | `npx playwright test --project=mobile` | ✅ 20 passed, 2 skipped (keyboard-only tests, by design) |
+| E2E — desktop 1440×900 | `npx playwright test --project=desktop` | ✅ 24 / 24 passed |
+| E2E — mobile (Pixel 7 emulation) | `npx playwright test --project=mobile` | ✅ 21 passed, 3 skipped (keyboard-only and desktop-only tests, by design) |
 
 #### Against the live deployment (https://somashekar2678.github.io/)
 
@@ -28,11 +28,12 @@ Environment: Ubuntu Linux (6.8 kernel), Node 24.22.0 LTS, Google Chrome (system 
 - **Array maths** (`beamforming.test.ts`, 12 tests): unit-modulus steering vectors; the linear solver round-trips; MVDR is distortionless (wᴴa = 1); MVDR null < −35 dB at a 40 dB jammer; LCMV gives an exact zero; MVDR beats the conventional beam's SINR by > 20 dB; the M − 1 degrees-of-freedom limit; MUSIC locates the jammer to within 6°.
 - **GPS C/A codes** (3): PRN 1 first chips = octal 1440; autocorrelation takes only {1023, −1, −65, 63}; cross-correlation is bounded.
 - **Lab model** (6): azimuth convention; MVDR vs conventional; MUSIC accuracy; LCMV on MUSIC estimates nulls two jammers; every preset × method is finite; a close jammer limits SINR.
+- **Journey path** (5): one caption per stage; starts and ends correctly; clamps; dwell-then-travel is continuous; visits every stage in order.
 - **Content integrity** (13): unique slugs; valid statuses and maturities; every case-study chapter filled; evidence on every project and a source on every metric; no `validated`/`production` statuses (none is documented); research labelled as research; https-only links; no placeholder markers; key résumé facts; the phone number is never rendered; certificates link to verification pages.
 
 ### What the end-to-end tests cover (each viewport)
 
-All sections render with **no console errors, page errors, failed requests or HTTP ≥ 400**; no horizontal overflow; skip link → `main` focus; menu is a modal dialog (opens, Escape closes, link navigates and scrolls); expertise tabs with arrow keys; **all 8 case studies** render 11 chapters with no errors; card → case study → back; not-found routes; all external links `target=_blank rel=noopener`; mailto present; résumé PDF served (200, `application/pdf`); every `#/work/` link resolves; certificate images load; lab controls change the model (method, preset, keyboard slider, reset); reduced motion leaves content visible; `?webgl=0` fallback works with no errors; **axe-core WCAG 2.1 AA audit** of home and a case study (0 serious or critical violations).
+All sections render with **no console errors, page errors, failed requests or HTTP ≥ 400**; no horizontal overflow; skip link → `main` focus; menu is a modal dialog (opens, Escape closes, link navigates and scrolls); expertise tabs with arrow keys; **all 8 case studies** render 11 chapters with no errors; card → case study → back; not-found routes; all external links `target=_blank rel=noopener`; mailto present; résumé PDF served (200, `application/pdf`); every `#/work/` link resolves; certificate images load; lab controls change the model (method, preset, keyboard slider, reset); reduced motion leaves content visible; `?webgl=0` fallback works with no errors; **axe-core WCAG 2.1 AA audit** of home and a case study (0 serious or critical violations); the signal's journey advances through its stages on scroll (desktop), its skip link works, the full story is exposed to screen readers, and it falls back to panels without WebGL and on phones.
 
 ## Visual inspection performed
 

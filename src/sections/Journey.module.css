@@ -1,0 +1,237 @@
+/* ─── Immersive (desktop + WebGL) ─── */
+.journey {
+  position: relative;
+}
+.stage {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  overflow: hidden;
+  background: #04050b;
+}
+.canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.scrim {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(to right, rgb(4 5 11 / 0.8) 0%, rgb(4 5 11 / 0.35) 34%, transparent 55%),
+    linear-gradient(to top, rgb(4 5 11 / 0.6), transparent 30%);
+}
+.head {
+  position: absolute;
+  top: calc(var(--nav-h) + 1rem);
+  left: var(--gutter);
+  right: var(--gutter);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+.head h2 {
+  color: var(--c-text);
+}
+.skip {
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.captions {
+  position: absolute;
+  left: var(--gutter);
+  bottom: clamp(5rem, 12vh, 9rem);
+  width: min(30rem, 42vw);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.caption {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  display: grid;
+  gap: 0.9rem;
+  opacity: 0;
+  transform: translate3d(0, 24px, 0);
+  transition:
+    opacity 600ms var(--ease-out),
+    transform 900ms var(--ease-out);
+  pointer-events: none;
+}
+.caption[data-active] {
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+}
+.count {
+  font-family: var(--font-mono);
+  font-size: var(--fs-label);
+  letter-spacing: 0.14em;
+  color: var(--c-text-3);
+}
+.count span {
+  color: var(--c-signal-bright);
+}
+.title {
+  font-family: var(--font-display);
+  font-weight: 560;
+  font-size: clamp(2rem, 1rem + 2.6vw, 3.6rem);
+  letter-spacing: -0.04em;
+  line-height: 0.98;
+  text-wrap: balance;
+}
+.body {
+  font-size: var(--fs-lead);
+  line-height: 1.5;
+  color: var(--c-text-2);
+  text-wrap: pretty;
+}
+.related {
+  justify-self: start;
+  min-height: 36px;
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: var(--fs-label);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--c-signal-bright);
+  text-decoration: none;
+}
+.related:hover {
+  color: var(--c-text);
+}
+
+.progress {
+  position: absolute;
+  left: var(--gutter);
+  right: var(--gutter);
+  bottom: 1.75rem;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 1.5rem;
+}
+.ticks {
+  display: flex;
+  gap: 0.9rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: var(--c-text-3);
+}
+.ticks li[data-on] {
+  color: var(--c-text);
+}
+.track {
+  position: relative;
+  height: 1px;
+  background: var(--c-line-strong);
+  overflow: hidden;
+}
+.bar {
+  position: absolute;
+  inset: 0;
+  background: var(--c-signal-bright);
+  transform-origin: left;
+  transform: scaleX(0);
+}
+.note {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--c-text-3);
+}
+
+/* ─── Static panels (phones, reduced motion, no WebGL) ─── */
+.panelsHead {
+  display: grid;
+  gap: 1.25rem;
+  max-width: 44rem;
+  margin-bottom: clamp(2.5rem, 5vw, 4rem);
+}
+.panelsHead h2 {
+  font-size: var(--fs-h2);
+}
+.grid {
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+.panel {
+  display: grid;
+  align-content: start;
+  gap: 0.7rem;
+  padding: 1.25rem;
+  border: var(--border);
+  border-radius: var(--r-lg);
+  background: var(--c-bg-elev);
+}
+.art {
+  aspect-ratio: 3 / 2;
+  display: grid;
+  place-items: center;
+  padding: 0.75rem;
+  margin-bottom: 0.5rem;
+  border-radius: var(--r-md);
+  background: var(--c-bg);
+  box-shadow: inset 0 0 0 1px var(--c-line);
+  color: var(--c-text-2);
+}
+.art svg {
+  max-height: 100%;
+  width: auto;
+  max-width: 100%;
+}
+.panelTitle {
+  font-family: var(--font-display);
+  font-size: var(--fs-h4);
+  font-weight: 560;
+  letter-spacing: -0.02em;
+}
+.panelBody {
+  font-size: var(--fs-sm);
+  color: var(--c-text-2);
+}
+.panelNote {
+  margin-top: 1.25rem;
+  font-size: var(--fs-sm);
+  color: var(--c-text-3);
+}
+.fixArt circle:first-child {
+  fill: none;
+  stroke: var(--c-text-3);
+  stroke-dasharray: 2 3;
+}
+.fixArt line {
+  stroke: var(--c-signal-bright);
+  stroke-opacity: 0.6;
+}
+.fixSat {
+  fill: var(--c-signal-bright);
+}
+.fixDot {
+  fill: var(--c-verified);
+}
+
+@media (max-width: 1000px) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 600px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}

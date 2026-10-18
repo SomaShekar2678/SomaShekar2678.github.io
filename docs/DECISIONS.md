@@ -18,6 +18,17 @@ Translated, not copied: the inset instrument window, registration marks, measure
 | **Hash routing** (`#/work/<slug>`) | Works on any static host and sub-path (GitHub Pages, artifact hosting) with no rewrites. A self-contained `404.html` covers unknown paths. |
 | WebGL, not WebGPU | WebGPU would add no capability here; WebGL has universal support. |
 
+## Signal's journey (scroll-driven 3D interlude)
+
+Added after the owner pointed to Lusion's multi-world scroll sequence. It is the same idea told in this site's terms: one GNSS signal's path through the owner's work.
+
+- One Three.js scene with six worlds spaced along −z. A single camera dwells at each world, then flies to the next through a ring portal.
+- Scroll progress → stage mapping is a pure function (`src/lib/journeyPath.ts`), unit-tested, and shared by the scene and the captions.
+- Driven by native `position: sticky` and a rAF scroll listener rather than GSAP pinning. This avoids the ScrollTrigger refresh/restore pitfalls found earlier.
+- World 3 morphs the array pattern from conventional to MVDR as you scroll; both patterns are computed with `beamforming.ts`. World 1's waterfall shows a blue signal below the noise floor, a CW spike and a sweeping chirp.
+- The scene loads one viewport ahead, renders only while visible, and is disposed on unmount. Phones, reduced motion and no WebGL get static panels.
+- Bug found by screenshots: the visibility observer fired before the lazily loaded scene existed, so the render loop never started. Visibility is now synced as soon as the scene is constructed.
+
 ## Colour carries meaning
 
 Blue = desired signal / primary action. Amber = interference. Lime = documented evidence. Colour is always paired with a text label (SAT/JAM markers, status text, maturity words), never used alone. Two extra tokens exist for contrast: `--c-signal-fill` (#3f5ce6, 5.4:1 behind white text) and `--c-signal-ink` (#2f47c4, 6.3:1 on warm white). Both were added after the axe audit flagged #5b7cff.
