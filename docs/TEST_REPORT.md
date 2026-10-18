@@ -13,7 +13,7 @@ Environment: Ubuntu Linux (6.8 kernel), Node 24.22.0 LTS, Google Chrome (system 
 | E2E — desktop 1440×900 | `npx playwright test --project=desktop` | ✅ 25 / 25 passed |
 | E2E — mobile (Pixel 7 emulation) | `npx playwright test --project=mobile` | ✅ 22 passed, 3 skipped (keyboard-only and desktop-only tests, by design) |
 
-#### Against the live deployment (https://somashekar2678.github.io/), after commit 16aebb7
+#### Against the live deployment (https://somashekar2678.github.io/), after commit 2c70b85 (includes the journey render-loop fix)
 
 | Check | Result |
 |---|---|
