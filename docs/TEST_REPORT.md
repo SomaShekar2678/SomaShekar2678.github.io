@@ -20,8 +20,8 @@ Environment: Ubuntu Linux (6.8 kernel), Node 24.22.0 LTS, Google Chrome (system 
 | GitHub Actions deploy run (type-check, lint, unit tests, build, publish) | ✅ success |
 | HTTP checks: `/`, OG image, résumé PDF, robots, sitemap, icons, certificate images | ✅ 200 with correct content types; unknown path → 404 page |
 | Built bundle served (not raw source); canonical URL present | ✅ |
-| `BASE_URL=… npx playwright test --project=desktop` | ✅ 22 / 22 passed |
-| `BASE_URL=… npx playwright test --project=mobile` | ✅ 20 passed, 2 skipped |
+| `BASE_URL=… npx playwright test --project=desktop` | ✅ 24 / 24 passed (including the journey, after commit 300fe5a) |
+| `BASE_URL=… npx playwright test --project=mobile` | ✅ 21 passed, 3 skipped |
 
 ## What the unit tests cover
 
