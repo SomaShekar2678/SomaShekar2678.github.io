@@ -4,7 +4,7 @@ import styles from './Footer.module.css'
 
 export function Footer() {
   return (
-    <footer className={styles.footer}>
+    <footer className={`theme-indigo ${styles.footer}`} data-nav="dark">
       <div className={`container ${styles.grid}`}>
         <p className={styles.copy}>
           © {new Date().getFullYear()} {profile.name}

@@ -20,13 +20,13 @@ export function Contact() {
   }
 
   return (
-    <section id="contact" className={`section ${styles.contact}`} aria-labelledby="contact-title">
+    <section id="contact" className={`section sheet theme-indigo ${styles.contact}`} data-nav="dark" aria-labelledby="contact-title">
       <div className="container">
         <p className="section-head__index label">
           <span>{meta.index}</span>
           <span>{meta.label}</span>
         </p>
-        <SplitText as="h2" id="contact-title" text="Let’s build systems that hold up in the real world." className={`display ${styles.title}`} />
+        <SplitText as="h2" id="contact-title" text="Let’s build systems / that *hold up* / in the real world." className={`display ${styles.title}`} />
         <p className={`lead ${styles.lead}`} data-reveal>
           Open to conversations about GNSS and RF signal processing, perception and state estimation, embedded ML and prognostics — roles, research
           collaborations and hard problems.

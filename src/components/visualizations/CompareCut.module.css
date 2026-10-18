@@ -1,0 +1,89 @@
+.wrap {
+  margin: 0;
+  display: grid;
+  gap: 0.75rem;
+}
+.svg {
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+.grid {
+  stroke: var(--c-line);
+}
+.zero {
+  stroke: var(--c-line-strong);
+}
+.tick {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  fill: var(--c-text-3);
+}
+.satMark {
+  stroke: var(--c-signal-bright);
+  stroke-dasharray: 2 4;
+}
+.satText {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  fill: var(--c-signal-bright);
+}
+.jamMark {
+  stroke: var(--c-interf);
+  stroke-dasharray: 4 3;
+}
+.jamText {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  fill: var(--c-interf);
+}
+.line {
+  fill: none;
+  stroke-width: 1.6;
+  stroke-linejoin: round;
+}
+.conv {
+  --line: var(--c-text-2);
+}
+.mvdr {
+  --line: var(--c-signal-bright);
+}
+.lcmv {
+  --line: var(--c-verified);
+}
+.line.conv {
+  stroke: var(--line);
+  stroke-dasharray: 5 4;
+}
+.line.mvdr,
+.line.lcmv {
+  stroke: var(--line);
+}
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1.4rem;
+  font-family: var(--font-mono);
+  font-size: var(--fs-label);
+  letter-spacing: 0.06em;
+  color: var(--c-text-2);
+}
+.legend > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.legend i {
+  width: 18px;
+  height: 2px;
+  background: var(--line);
+}
+.legend strong {
+  color: var(--c-text);
+  font-weight: 600;
+}
+.note {
+  flex-basis: 100%;
+  color: var(--c-text-3);
+}

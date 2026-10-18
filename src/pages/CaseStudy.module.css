@@ -34,7 +34,37 @@
 }
 .title {
   margin-top: 0.75rem;
-  font-size: clamp(3rem, 1rem + 8vw, 9rem);
+  font-size: clamp(3.4rem, 1rem + 9vw, 11rem);
+}
+.plate {
+  margin: 0;
+  display: grid;
+  gap: 0.75rem;
+}
+.plate img {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 11;
+  max-height: 82vh;
+  object-fit: cover;
+  border-radius: var(--r-xl);
+  background: var(--c-surface);
+}
+.plate[data-tone='cobalt'] img {
+  background: #2a3ab8;
+}
+.plate[data-tone='copper'] img {
+  background: #b5612f;
+}
+.plate[data-tone='sage'] img {
+  background: #b7c6b6;
+}
+.plate[data-tone='night'] img {
+  background: #1b1d23;
+}
+.svgPlate {
+  border-radius: var(--r-xl);
+  overflow: hidden;
 }
 .title:focus {
   outline: none;

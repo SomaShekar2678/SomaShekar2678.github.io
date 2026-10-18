@@ -8,19 +8,21 @@
   gap: 10px;
   transform: translateY(-50%);
   pointer-events: none;
+  mix-blend-mode: difference;
+  color: #fff;
 }
 .track {
   position: relative;
   width: 2px;
   height: 120px;
   border-radius: 2px;
-  background: var(--c-line);
+  background: rgb(255 255 255 / 0.25);
   overflow: hidden;
 }
 .fill {
   position: absolute;
   inset: 0;
-  background: var(--c-text);
+  background: #fff;
   transform-origin: top;
   transform: scaleY(0);
 }
@@ -28,7 +30,7 @@
   font-family: var(--font-mono);
   font-size: 9px;
   letter-spacing: 0.1em;
-  color: var(--c-text-3);
+  color: rgb(255 255 255 / 0.7);
 }
 @media (max-width: 900px) {
   .rail {

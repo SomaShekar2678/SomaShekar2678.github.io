@@ -6,6 +6,59 @@ Observed: an Astro site with full-viewport WebGL canvases and virtual scrolling 
 
 Translated, not copied: the inset instrument window, registration marks, measured loader counter, pill navigation, word reveals and a two-column work grid. No code, assets, text or exact compositions were reused. The site keeps **native scrolling** rather than virtual scrolling, for accessibility.
 
+## Redesign v2 — "paper and signal" (2026-10-19)
+
+The owner judged v1 generic: AI-generated in feel, black everywhere, nowhere near the reference. v2 kept the engineering (maths, lab, journey, content model, routing, tests) and replaced the visual architecture.
+
+### Audit of v1 (live site at 1440×900 and 390×844, and lusion.co re-inspected in Chrome)
+
+1. Every one of 25 desktop screens was near-black navy plus blue. There was no light, warm or image-led chapter.
+2. Lusion is the opposite: about three-quarters pale editorial page, colour from vivid project imagery, black kept for one cinematic dive.
+3. The hero was wireframe lines on black: no material, light or shadow. The readout card competed with the name.
+4. One template repeated in every section: mono label, sans heading, right aside, grid of dark rounded cards.
+5. Project covers were thin blue line art in identical dark boxes. The projects had no visual identity.
+6. A generic fade-up was applied to almost every block. It was not a designed motion language.
+7. Typography had one register. Weights and widths were the same everywhere, with no editorial contrast.
+8. The page was too long (≈ 21,800 px desktop, 24,000 px mobile), and many sections were dense text on dark.
+9. The hero → journey seam went from dark to dark, so there was no sense of entering another world.
+10. Mobile was a long dark column of cards with no art direction of its own.
+
+### Art direction
+
+- **Surfaces.** Warm paper (`#f1ede4`) with ink type is the default. Each chapter has its own theme class, which remaps the semantic colour variables so the same components work everywhere:
+  - hero, About, Work, Experience: paper;
+  - Lab and Education: sand;
+  - Expertise and Contact: indigo blueprint;
+  - India: copper;
+  - the journey: night, the only full-bleed dark scene.
+
+  Chapters overlap like sheets, with rounded top corners. The nav reads the chapter beneath it (`data-nav`) and switches tone.
+- **Type.** Bricolage Grotesque, condensed through its width axis (`font-stretch` ≈ 76–88 %), is used for oversized headlines and the name. Instrument Serif italic is the accent inside headlines, written as `*word*` in content, with `/` for a deliberate line break. Inter is the body face; JetBrains Mono is for technical annotation ("fig. 01 — …"). Instrument Serif (OFL, about 22 kB) is the only new dependency.
+- **Imagery.** The five featured projects have rendered covers made from custom geometry and each project's own maths (`src/render/covers.ts`, `npm run covers`). They are written as WebP files at 800 and 1600 px, with no runtime cost. Each has its own palette (cobalt, sage, copper, night, paper). Every alt text and caption says "illustrative render", because none depicts measured data.
+- **Hero.** A physically lit sculpture on paper: a 4×4 patch array (copper patches on a clear-coated substrate), the array's power pattern as a glossy cobalt solid, a satellite, a copper interferer, drafting lines and soft shadows. The intro is choreographed and then stops: board → conventional beam grows → interferer appears → the pattern re-forms as MVDR. After that it renders only on pointer or scroll changes. The same scene, pre-rendered, is the no-WebGL fallback and the OG card.
+- **Motion language.** One family of curves: expo-out for arrivals, in-out for travel, linear for anything driven by scroll. The signature transitions:
+  - headline lines rise out of a mask;
+  - covers are revealed by a tone panel lifting off once the image has loaded;
+  - the method line draws itself as you scroll;
+  - the journey opens through a widening aperture (`clip-path: circle`) from the hero;
+  - the hero's camera rises into the beam while the two name lines part.
+- **Distinct chapter patterns.**
+  - About: an editorial statement with read-along, a datasheet of facts, and the process line with its feedback loop.
+  - Expertise: a signal-chain block diagram that is also the tablist.
+  - Work: one spread, then staggered pairs.
+  - Lab: a dark instrument set into the warm page.
+  - Experience: a true-scale career ruler built from the content data.
+  - Education: certificates set on the page like prints.
+  - India: a numbered editorial list on copper.
+  - Contact: oversized type on indigo.
+
+### Additions and bugs found during v2
+
+- **Lab "Compare methods" view** (`compareCut` in `labModel.ts`, unit-tested): conventional, MVDR and LCMV on one azimuth cut at the jammer's elevation, each normalised to 0 dB toward the satellite.
+- **Headline word spacing.** It collapsed because the space sat inside an inline-block, where trailing spaces are removed. It is now outside.
+- **Covers never revealing or loading.** Chrome's IntersectionObserver, and native lazy loading with it, treats a fully `clip-path`-clipped element as invisible. A duplicated CSS block (from a scripted edit) had left such a clip in place. Covers now load through our own observer, and the reveal uses a panel over the image instead of clipping it.
+- **Tablet portrait.** The satellite overlapped the statement, so the hero uses the stacked phone order on portrait tablets, with per-aspect camera offsets.
+
 ## Stack
 
 | Decision | Reason |
@@ -31,7 +84,7 @@ Added after the owner pointed to Lusion's multi-world scroll sequence. It is the
 
 ## Colour carries meaning
 
-Blue = desired signal / primary action. Amber = interference. Lime = documented evidence. Colour is always paired with a text label (SAT/JAM markers, status text, maturity words), never used alone. Two extra tokens exist for contrast: `--c-signal-fill` (#3f5ce6, 5.4:1 behind white text) and `--c-signal-ink` (#2f47c4, 6.3:1 on warm white). Both were added after the axe audit flagged #5b7cff.
+Blue (cobalt on paper, mineral blue on dark) = desired signal / primary action. Copper on paper, amber on dark = interference. Forest green on paper, lime on dark = documented evidence. All pairs meet WCAG AA in every chapter theme. Colour is always paired with a text label (SAT/JAM markers, status text, maturity words), never used alone. Two extra tokens exist for contrast: `--c-signal-fill` (#3f5ce6, 5.4:1 behind white text) and `--c-signal-ink` (#2f47c4, 6.3:1 on warm white). Both were added after the axe audit flagged #5b7cff.
 
 ## Mathematical models (all labelled illustrative on the page)
 

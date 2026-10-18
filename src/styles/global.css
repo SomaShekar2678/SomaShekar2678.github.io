@@ -78,7 +78,7 @@ button {
 }
 
 ::selection {
-  background: var(--c-signal-fill);
+  background: var(--cobalt);
   color: #fff;
 }
 
@@ -137,17 +137,32 @@ html.lenis body {
 
 .display {
   font-family: var(--font-display);
-  font-weight: 560;
+  font-weight: 600;
+  font-stretch: var(--display-stretch);
   letter-spacing: var(--tracking-display);
   line-height: var(--lh-tight);
-  font-variation-settings: 'opsz' 96;
 }
 
+/* Editorial accent: an italic serif word inside a grotesk headline. */
 .serif {
   font-family: var(--font-serif);
   font-style: italic;
   font-weight: 400;
+  font-stretch: normal;
   letter-spacing: -0.01em;
+}
+.display .serif {
+  letter-spacing: -0.02em;
+  font-size: 1.04em;
+}
+
+/* Small technical annotation, e.g. "fig. 02 — MVDR pattern, 4×4 URA, λ/2". */
+.annot {
+  font-family: var(--font-mono);
+  font-size: var(--fs-label);
+  letter-spacing: 0.06em;
+  line-height: 1.5;
+  color: var(--c-text-3);
 }
 
 .lead {
@@ -179,6 +194,7 @@ html.lenis body {
 .btn {
   --btn-bg: var(--c-text);
   --btn-fg: var(--c-text-inverse);
+  --btn-hover: var(--c-signal-fill);
   position: relative;
   display: inline-flex;
   align-items: center;
@@ -209,7 +225,7 @@ html.lenis body {
   inset: 0;
   z-index: -1;
   border-radius: inherit;
-  background: var(--c-signal-fill);
+  background: var(--btn-hover);
   transform: translateY(101%);
   transition: transform var(--t-slow) var(--ease-out);
 }
@@ -262,6 +278,18 @@ html.lenis body {
   padding-block: var(--section-pad);
 }
 
+/*
+ * A chapter that slides over the previous one like a sheet of paper: rounded top corners and a
+ * negative top margin so the previous chapter's colour shows in the corners.
+ */
+.sheet {
+  position: relative;
+  z-index: 2;
+  margin-top: calc(var(--r-xl) * -1);
+  border-radius: var(--r-xl) var(--r-xl) 0 0;
+}
+
+/* Chapter heading: a running index line, then an oversized condensed title. */
 .section-head {
   display: grid;
   grid-template-columns: repeat(12, minmax(0, 1fr));
@@ -279,16 +307,17 @@ html.lenis body {
   content: '';
   flex: 1;
   height: 1px;
-  background: var(--c-line);
+  background: var(--c-line-strong);
 }
 .section-head__title {
-  grid-column: 1 / span 8;
+  grid-column: 1 / span 9;
   font-size: var(--fs-h2);
 }
 .section-head__aside {
-  grid-column: 9 / -1;
-  max-width: 34ch;
+  grid-column: 10 / -1;
+  max-width: 32ch;
   justify-self: end;
+  color: var(--c-text-2);
 }
 @media (max-width: 860px) {
   .section-head__title,

@@ -5,6 +5,7 @@ import { NotFound } from './NotFound'
 import { StatusChip, MaturityTag } from '../components/layout/Badges'
 import { ExtLink } from '../components/layout/ExtLink'
 import { ProjectCover } from '../components/projects/ProjectCover'
+import { CoverImage } from '../components/projects/CoverImage'
 import { ArchitectureDiagram } from '../components/projects/ArchitectureDiagram'
 import { useActiveSection } from '../hooks/useActiveSection'
 import { projectHref } from '../lib/router'
@@ -79,7 +80,7 @@ function CaseStudyView({ project: p }: { project: Project }) {
   }, [p])
 
   return (
-    <article className={styles.page} aria-labelledby="cs-title">
+    <article className={`theme-paper ${styles.page}`} data-nav="light" aria-labelledby="cs-title">
       <header className={`container ${styles.header}`}>
         <nav className={styles.crumbs} aria-label="Breadcrumb">
           <a href="#work">← All work</a>
@@ -129,7 +130,16 @@ function CaseStudyView({ project: p }: { project: Project }) {
       </header>
 
       <div className="container">
-        <ProjectCover kind={p.cover} large />
+        {p.image ? (
+          <figure className={styles.plate} data-tone={p.tone}>
+            <CoverImage project={p} sizes="(max-width: 1680px) 100vw, 1600px" eager className={styles.plateImg} />
+            <figcaption className="annot">Illustrative render computed from the project’s mathematics — not measured data or a photograph of the system.</figcaption>
+          </figure>
+        ) : (
+          <div className={`theme-night ${styles.svgPlate}`}>
+            <ProjectCover kind={p.cover} large />
+          </div>
+        )}
       </div>
 
       <div className={`container ${styles.layout}`}>

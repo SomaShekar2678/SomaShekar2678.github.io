@@ -65,6 +65,7 @@ export function Loader() {
         </div>
         <p className={styles.counter} aria-hidden="true">
           <span ref={counterRef}>000</span>
+          <small>signals, systems & intelligence</small>
         </p>
       </div>
     </div>

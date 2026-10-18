@@ -1,12 +1,13 @@
 import { useDeferredValue, useEffect, useId, useMemo, useRef, useState, type ReactNode } from 'react'
 import { L1_WAVELENGTH_M } from '../../lib/beamforming'
-import { computeLab, DEFAULT_PARAMS, LAB_GRID, PRESETS, SAT_SNR_DB, type LabParams, type Method } from '../../lib/labModel'
+import { compareCut, computeLab, DEFAULT_PARAMS, LAB_GRID, PRESETS, SAT_SNR_DB, type LabParams, type Method } from '../../lib/labModel'
 import { hasWebGL } from '../../lib/env'
 import { SkyPlot, type SkyMarker } from './SkyPlot'
+import { CompareCut } from './CompareCut'
 import type { PatternView3D } from '../three/PatternView3D'
 import styles from './BeamLab.module.css'
 
-type View = 'gain' | 'music' | '3d'
+type View = 'gain' | 'music' | 'compare' | '3d'
 
 const METHODS: { id: Method; label: string; hint: string }[] = [
   { id: 'conventional', label: 'Conventional', hint: 'Delay-and-sum steered at the satellite. Fixed weights; no knowledge of the jammer.' },
@@ -45,6 +46,7 @@ export function BeamLab() {
   const [preset, setPreset] = useState('single')
   const deferred = useDeferredValue(params)
   const result = useMemo(() => computeLab(deferred), [deferred])
+  const cut = useMemo(() => (view === 'compare' ? compareCut(deferred, result.estimates) : null), [view, deferred, result.estimates])
   const webgl = useMemo(() => hasWebGL(), [])
 
   const set = (patch: Partial<LabParams>) => {
@@ -186,6 +188,7 @@ export function BeamLab() {
               [
                 ['gain', 'Array gain'],
                 ['music', 'MUSIC DoA'],
+                ['compare', 'Compare methods'],
                 ...(webgl ? [['3d', '3D pattern']] : []),
               ] as [View, string][]
             ).map(([id, label]) => (
@@ -198,6 +201,8 @@ export function BeamLab() {
           <div className={styles.stage} role="tabpanel">
             {view === '3d' ? (
               <Pattern3D gainDb={result.gainDb} markers={markers} />
+            ) : view === 'compare' && cut ? (
+              <CompareCut cut={cut} satAz={params.satAz} satEl={params.satEl} jammers={activeJams.map((j) => ({ az: j.az, label: `J${j.i + 1}` }))} />
             ) : (
               <SkyPlot
                 map={view === 'gain' ? result.gainDb : result.musicDb}

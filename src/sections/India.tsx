@@ -7,8 +7,7 @@ import styles from './India.module.css'
 export function India() {
   const meta = sectionMeta('india')
   return (
-    <section id="india" className={`section ${styles.india}`} aria-labelledby="india-title">
-      <div className={styles.glow} aria-hidden="true" />
+    <section id="india" className={`section sheet theme-copper ${styles.india}`} data-nav="dark" aria-labelledby="india-title">
       <div className="container">
         <p className="section-head__index label">
           <span>{meta.index}</span>
@@ -16,7 +15,7 @@ export function India() {
         </p>
         <div className={styles.top}>
           <div className={styles.copy}>
-            <SplitText as="h2" id="india-title" text={india.title} className={`display ${styles.title}`} />
+            <SplitText as="h2" id="india-title" text="Building technology / that *advances India.*" className={`display ${styles.title}`} />
             <p className={`lead ${styles.intro}`} data-reveal>
               {india.intro}
             </p>
@@ -29,7 +28,7 @@ export function India() {
 
         <ol className={styles.areas} role="list">
           {india.areas.map((a, i) => (
-            <li key={a.title} className={styles.area} data-reveal style={{ '--reveal-delay': `${(i % 4) * 70}ms` } as CSSProperties}>
+            <li key={a.title} className={styles.area} data-reveal style={{ '--reveal-delay': `${(i % 2) * 80}ms` } as CSSProperties}>
               <span className={styles.areaIndex}>{String(i + 1).padStart(2, '0')}</span>
               <h3 className={styles.areaTitle}>{a.title}</h3>
               <p>{a.body}</p>

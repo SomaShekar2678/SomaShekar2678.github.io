@@ -15,7 +15,8 @@ Edit facts in `src/content/*.ts`. Items are ordered by importance.
 - [ ] **Résumé PDF.** `public/resume/Somashekar_Nakka_Resume.pdf` is currently a copy of the *Autonomous Robotics Engineer (Infosys)* tailored CV. That was the closest general-purpose variant: no company name inside, but the headline is robotics-focused. Replace it with a general CV. It includes your phone number.
 - [ ] **Cleared quantitative results** for J-DOME (suppression depth, latency), visual localization accuracy, and PHM model accuracy, only if shareable.
 - [ ] **The RUL / degradation notebook** referenced in the brief (Random Forest RUL proxy, linear mixed-effects) was not in `inputs/`. Without it, those specific methods and results are not shown.
-- [ ] **Public-safe imagery**: hardware set-up photos, matched-correspondence examples, dashboard screenshots (if cleared).
+- [ ] **Public-safe imagery**: hardware set-up photos, matched-correspondence examples, dashboard screenshots, real simulation plots (if cleared). The featured covers are currently *illustrative renders* computed from each project's maths (`npm run covers`). Real artefacts would be stronger evidence. Add them to the case studies and keep the renders as covers, or replace them.
+- [ ] **Portrait photo (optional).** The redesign does not need one, but an editorial portrait could sit in the About chapter.
 - [ ] **Next steps for Engine Prognostics** and the **Medical RAG Chatbot** (currently "Owner to add").
 - [ ] **GNSS receiver research**: any design docs or code for receiver stages that already exist.
 

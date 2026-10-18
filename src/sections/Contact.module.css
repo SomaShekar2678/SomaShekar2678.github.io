@@ -3,8 +3,10 @@
 }
 .title {
   margin-top: 1.5rem;
-  font-size: clamp(2.6rem, 1rem + 6.4vw, 8.5rem);
-  max-width: 14ch;
+  font-size: clamp(3rem, 0.8rem + 7.6vw, 10.5rem);
+}
+.title :global(.serif) {
+  color: var(--c-interf);
 }
 .lead {
   margin-top: 2rem;
@@ -22,8 +24,9 @@
 }
 .mail {
   font-family: var(--font-display);
-  font-weight: 520;
-  font-size: clamp(1.4rem, 0.8rem + 3vw, 3.6rem);
+  font-stretch: 82%;
+  font-weight: 600;
+  font-size: clamp(1.8rem, 0.6rem + 4.6vw, 5.4rem);
   letter-spacing: -0.03em;
   text-decoration: none;
   overflow-wrap: anywhere;
@@ -36,33 +39,34 @@
   background-size: 100% 1px;
 }
 .links {
-  margin: 2rem 0 0;
+  margin: 2.5rem 0 0;
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 1rem;
+  gap: 0 var(--s-5);
 }
 .card {
   height: 100%;
   display: grid;
   gap: 0.4rem;
-  padding: 1.25rem;
-  border: var(--border);
-  border-radius: var(--r-md);
+  padding: 1.1rem 0 1.4rem;
+  border-top: 1px solid var(--c-line-strong);
   text-decoration: none;
-  background: var(--c-bg-elev);
-  transition: border-color var(--t-med), transform var(--t-med) var(--ease-out), background var(--t-med);
+  transition: border-color var(--t-med);
 }
 .card:hover,
 .card:focus-visible {
-  border-color: var(--c-signal);
-  background: var(--c-surface);
-  transform: translateY(-3px);
+  border-top-color: var(--c-text);
+}
+.card:hover .cardTitle {
+  transform: translateX(6px);
 }
 .cardTitle {
   font-family: var(--font-display);
-  font-size: var(--fs-h4);
-  font-weight: 560;
+  font-stretch: 88%;
+  font-size: clamp(1.3rem, 1rem + 0.9vw, 1.9rem);
+  font-weight: 600;
   letter-spacing: -0.02em;
+  transition: transform var(--t-med) var(--ease-out);
 }
 .cardMeta {
   font-size: var(--fs-sm);

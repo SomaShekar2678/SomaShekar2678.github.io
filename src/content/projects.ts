@@ -63,6 +63,8 @@ export const projects: Project[] = [
       'Algorithms taken from Python simulation through fixed-point HLS to a real-time DSP pipeline on Xilinx RFSoC (per résumé). Field effectiveness is not claimed here.',
     featured: true,
     cover: 'beam',
+    image: { name: 'j-dome', alt: 'Illustrative render: a seven-element circular antenna array under a white sculpture of its MVDR beam pattern, with two copper interferer markers on the horizon and nulls toward them.' },
+    tone: 'cobalt',
     metrics: [
       { value: 'L1 → L1/L2/L5', label: 'Interference processing extended from single-band to multi-band', source: 'resume' },
       { value: 'RFSoC', label: 'Real-time streaming covariance and adaptive-weight processing', source: 'resume' },
@@ -220,6 +222,8 @@ export const projects: Project[] = [
     statusNote: 'End-to-end pipeline built and latency measured (per résumé). Localization accuracy figures are not published.',
     featured: true,
     cover: 'matching',
+    image: { name: 'visual-localization', alt: 'Illustrative render: a camera above contour-lined terrain, with blue rays to matched ground features and a dashed flight path.' },
+    tone: 'sage',
     metrics: [
       { value: '22 s → 1 s', label: 'End-to-end localization latency (~20×)', source: 'resume' },
     ],
@@ -303,6 +307,8 @@ export const projects: Project[] = [
     statusNote: 'RUL estimates and fleet dashboards delivered internally (per résumé).',
     featured: true,
     cover: 'survival',
+    image: { name: 'engine-prognostics', alt: 'Illustrative render: a row of standing survival curves for an engine fleet, one highlighted in black with a blue 80% interval band.' },
+    tone: 'copper',
     metrics: [
       { value: '80% CI', label: 'Remaining-useful-life estimates delivered with confidence intervals', source: 'resume' },
       { value: '0 – 100', label: 'Engine health score with Green / Amber / Red classes', source: 'resume' },
@@ -400,6 +406,8 @@ export const projects: Project[] = [
       'Fusion pipelines developed and odometry stacks integrated on ROS 2 Humble (per résumé). The UAV navigation study is a simulation. No deployed-product claim.',
     featured: true,
     cover: 'trajectory',
+    image: { name: 'perception-state-estimation', alt: 'Illustrative render: a LiDAR-style point cloud of a corridor with doorways, an estimated trajectory as a blue tube and green covariance ellipsoids that grow along it.' },
+    tone: 'night',
     metrics: [{ value: '6-DoF', label: 'Real-time pose from IMU, stereo vision and GNSS', source: 'resume' }],
     caseStudy: {
       problem: [
@@ -489,6 +497,8 @@ export const projects: Project[] = [
     statusNote: 'Architecture and literature study. PRN correlation is implemented within the anti-jamming work; the other stages are planned.',
     featured: true,
     cover: 'correlation',
+    image: { name: 'gnss-receiver-research', alt: 'Illustrative render: the 1023 chips of the GPS C/A code for PRN 1 as a ring of bars, with its autocorrelation on an inner ring and a single copper spike at zero lag.' },
+    tone: 'paper',
     metrics: [],
     caseStudy: {
       problem: [

@@ -4,10 +4,11 @@
 
 Portfolio of an AI/ML engineer working across GNSS anti-jamming, array signal processing, FPGA acceleration, perception and prognostics. A single-page React app with:
 
-- a real-time Three.js hero;
-- a scroll-driven 3D "signal's journey" through six worlds (orbit → interference → adaptive array → FPGA → perception → position fix);
-- an interactive beamforming lab;
-- evidence-backed case studies.
+- an editorial "paper and signal" art direction: warm paper chapters, an indigo blueprint, a copper chapter and one cinematic night sequence (see `docs/DECISIONS.md`);
+- a physically lit Three.js hero: a 4×4 array whose live beam pattern re-forms from conventional to MVDR as the interferer appears;
+- a scroll-driven 3D "signal's journey" through six worlds (orbit → interference → adaptive array → FPGA → perception → position fix), entered through an aperture;
+- an interactive beamforming lab, including a side-by-side comparison of the three beamformers;
+- evidence-backed case studies with rendered covers computed from each project's mathematics.
 
 Every visual that shows numbers is computed from a stated mathematical model in the browser (steering vectors, MVDR/LCMV weights, MUSIC, GPS C/A Gold codes) and is labelled illustrative.
 
@@ -54,7 +55,7 @@ All personal and project facts live in `src/content/`. Components never hard-cod
 
 To replace the résumé, overwrite `public/resume/Somashekar_Nakka_Resume.pdf` and update `profile.resume.updated`.
 
-Social card and icons are regenerated with `npm run assets` (writes `public/og.png` and `public/icons/*.png`).
+Project covers and the hero's fallback still are rendered with `npm run covers` (custom Three.js scenes in `src/render/covers.ts`, written to `public/covers/*.webp` and `public/media/hero-array.webp`). The social card and icons are then regenerated with `npm run assets` (`public/og.png`, `public/icons/*.png`). Both use headless Chrome.
 
 ## Project structure
 

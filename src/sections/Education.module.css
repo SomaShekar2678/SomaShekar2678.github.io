@@ -1,37 +1,60 @@
+.education {
+  padding-bottom: calc(var(--section-pad) + var(--r-xl));
+}
+.education :global(.section-head__title .serif) {
+  color: var(--c-interf);
+}
 .creds {
   margin: 0;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1rem;
+  gap: 0 var(--s-6);
 }
-.cred {
+/* Degree and programme: typographic entries on a rule, no box. */
+.textOnly {
   display: grid;
-  border: var(--border);
-  border-radius: var(--r-lg);
-  background: var(--c-bg-elev);
-  overflow: hidden;
+  border-top: 2px solid var(--c-text);
 }
+.textOnly .credTitle {
+  font-family: var(--font-display);
+  font-stretch: 85%;
+  font-size: clamp(1.7rem, 1.1rem + 1.8vw, 2.9rem) !important;
+  font-weight: 600 !important;
+  line-height: 1;
+}
+/* Certificates: the documents themselves, set on the page like prints. */
 .withImage {
-  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1fr);
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  gap: var(--s-5);
+  align-items: start;
+  margin-top: clamp(3rem, 2rem + 3vw, 5rem);
 }
 .thumb {
   background: #fff;
-  display: grid;
-  place-items: center;
-  border-right: var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+  box-shadow:
+    0 30px 60px -30px rgb(40 26 8 / 0.45),
+    0 0 0 1px rgb(21 22 26 / 0.08);
+  transform: rotate(-1.6deg);
+  transition: transform var(--t-slow) var(--ease-out);
+}
+.withImage:nth-child(even) .thumb {
+  transform: rotate(1.4deg);
+}
+.withImage:hover .thumb {
+  transform: rotate(0deg) translateY(-4px);
 }
 .thumb img {
   width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: top left;
-  filter: grayscale(0.15);
+  height: auto;
 }
 .credBody {
   display: grid;
   align-content: start;
   gap: 0.35rem;
-  padding: clamp(1.25rem, 2.2vw, 2rem);
+  padding: 1.25rem 0 0;
 }
 .credTitle {
   margin-top: 0.4rem;

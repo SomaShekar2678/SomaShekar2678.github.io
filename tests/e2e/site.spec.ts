@@ -73,10 +73,12 @@ test('menu opens as a dialog, closes with Escape, and navigates', async ({ page 
 test('expertise tabs support arrow-key navigation', async ({ page }, info) => {
   test.skip(info.project.name === 'mobile', 'keyboard test runs on desktop')
   await ready(page)
-  const first = page.getByRole('tab', { name: /AI & Machine Learning/ })
+  // The chain reads antenna → software: RF & GNSS first, then signal processing.
+  const first = page.getByRole('tab', { name: /RF & GNSS/ })
   await first.scrollIntoViewIfNeeded()
+  await expect(first).toHaveAttribute('aria-selected', 'true')
   await first.focus()
-  await page.keyboard.press('ArrowDown')
+  await page.keyboard.press('ArrowRight')
   const second = page.getByRole('tab', { name: /Signal Processing/ })
   await expect(second).toBeFocused()
   await expect(second).toHaveAttribute('aria-selected', 'true')
@@ -164,6 +166,23 @@ test('beamforming lab controls update the model', async ({ page }) => {
   await expect(az).not.toHaveValue(before)
   await page.getByRole('button', { name: 'Reset' }).click()
   await expect(readouts).not.toContainText('Toward J2')
+  // The comparison view draws all three beamformers on one cut and reports each at the jammer.
+  await page.getByRole('tab', { name: 'Compare methods' }).click()
+  const cut = page.locator('#lab figure svg[role="img"]')
+  await expect(cut).toBeVisible()
+  await expect(cut).toHaveAttribute('aria-label', /Conventional .*MVDR .*LCMV/)
+  await expect(cut.locator('path')).toHaveCount(3)
+})
+
+test('featured work shows rendered covers', async ({ page }) => {
+  await ready(page)
+  const imgs = page.locator('#work figure img')
+  await expect(imgs).toHaveCount(5)
+  for (let i = 0; i < 5; i++) {
+    await imgs.nth(i).scrollIntoViewIfNeeded()
+    await expect.poll(() => imgs.nth(i).evaluate((el: HTMLImageElement) => el.complete && el.naturalWidth > 0)).toBe(true)
+    await expect(imgs.nth(i)).toHaveAttribute('alt', /Illustrative render/)
+  }
 })
 
 test.describe('reduced motion', () => {
@@ -171,9 +190,12 @@ test.describe('reduced motion', () => {
   test('content is visible without animation', async ({ page }) => {
     await ready(page)
     await expect(page.locator('html')).not.toHaveClass(/motion/)
-    await page.locator('#about').scrollIntoViewIfNeeded()
-    const opacity = await page.locator('#about [data-reveal]').first().evaluate((el) => getComputedStyle(el).opacity)
-    expect(opacity).toBe('1')
+    // Headlines are not masked and covers are not hidden behind their reveal panel.
+    await page.locator('#work').scrollIntoViewIfNeeded()
+    const word = await page.locator('#work-title .split-word').first().evaluate((el) => getComputedStyle(el).transform)
+    expect(word).toBe('none')
+    const panel = await page.locator('#work figure').first().evaluate((el) => getComputedStyle(el, '::after').content)
+    expect(panel).toBe('none')
   })
 })
 
@@ -181,7 +203,9 @@ test('WebGL fallback keeps the page functional', async ({ page }) => {
   const problems = watch(page)
   await ready(page, '/?webgl=0')
   await expect(page.locator('#top canvas')).toHaveCount(0)
-  await expect(page.locator('#top svg[role="img"]')).toBeVisible()
+  const poster = page.locator('#top img')
+  await expect(poster).toBeVisible()
+  await expect.poll(() => poster.evaluate((el: HTMLImageElement) => el.complete && el.naturalWidth > 0)).toBe(true)
   await page.locator('#lab').scrollIntoViewIfNeeded()
   await expect(page.getByRole('tab', { name: 'Array gain' })).toBeVisible({ timeout: 10_000 })
   await expect(page.getByRole('tab', { name: '3D pattern' })).toHaveCount(0)

@@ -1,3 +1,7 @@
+/*
+ * No bar: the wordmark and pills float over the page, as on an editorial spread.
+ * The header takes the theme of the chapter beneath it (see Nav.tsx), so it is always legible.
+ */
 .nav {
   position: fixed;
   inset: 0 0 auto 0;
@@ -8,25 +12,33 @@
   align-items: center;
   gap: 1rem;
   padding-inline: var(--gutter);
-  transition: background-color var(--t-med) var(--ease-out), box-shadow var(--t-med) var(--ease-out);
+  background: transparent !important;
+  pointer-events: none;
+  transition: color var(--t-med) var(--ease-out);
 }
-.scrolled {
-  background: rgb(7 8 10 / 0.72);
-  backdrop-filter: blur(14px) saturate(1.2);
-  -webkit-backdrop-filter: blur(14px) saturate(1.2);
-  box-shadow: 0 1px 0 var(--c-line);
+.nav > * {
+  pointer-events: auto;
 }
 .mark {
   justify-self: start;
   display: grid;
-  line-height: 1.1;
+  line-height: 1.05;
   text-decoration: none;
   padding: 4px 0;
 }
+.scrolled .mark {
+  margin-left: -0.75rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: var(--r-md);
+  background: color-mix(in srgb, var(--c-bg) 82%, transparent);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
 .markName {
   font-family: var(--font-display);
-  font-weight: 650;
-  font-size: 1.05rem;
+  font-stretch: 85%;
+  font-weight: 700;
+  font-size: 1.15rem;
   letter-spacing: -0.02em;
 }
 .markRole {
@@ -40,12 +52,23 @@
   display: inline-flex;
   align-items: center;
   gap: 0.6rem;
+  min-height: 36px;
+  padding: 0 0.95rem;
+  border-radius: var(--r-pill);
+  background: color-mix(in srgb, var(--c-bg) 82%, transparent);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   font-family: var(--font-mono);
   font-size: var(--fs-label);
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--c-text-2);
   overflow: hidden;
+  opacity: 0;
+  transition: opacity var(--t-med) var(--ease-out);
+}
+.scrolled .where {
+  opacity: 1;
 }
 .whereDot {
   width: 6px;
@@ -69,6 +92,12 @@
   display: flex;
   gap: 0.4rem;
   align-items: center;
+}
+/* Pills carry their own surface so they stay readable over imagery. */
+.actions :global(.btn--ghost) {
+  --btn-bg: color-mix(in srgb, var(--c-bg) 82%, transparent);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 .menuBtn {
   gap: 0.6rem;

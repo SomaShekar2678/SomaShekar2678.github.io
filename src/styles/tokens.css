@@ -1,58 +1,58 @@
 /*
- * Design tokens — The Engineering Frontier.
+ * Design tokens — The Engineering Frontier, v2 ("paper and signal").
  *
- * Colour carries meaning across the whole site and is always paired with a text label:
- *   signal   (blue)  — the desired signal / intelligence / primary action
- *   interf   (amber) — interference, jammers, risk
- *   verified (lime)  — evidence that is documented / measured
+ * The page is mostly warm paper with ink typography. Colour comes from chapters with their own
+ * character (indigo blueprint, copper, a single cinematic night sequence) and from project imagery.
+ *
+ * Colour still carries meaning everywhere and is always paired with a text label:
+ *   signal   (cobalt / mineral blue) — the desired signal, intelligence, primary action
+ *   interf   (copper / amber)        — interference, jammers, risk
+ *   verified (green / lime)          — evidence that is documented or measured
+ *
+ * Components use the semantic variables (--c-bg, --c-text, --c-signal…). A theme class on a section
+ * remaps them, so the same component works on paper, indigo or night. All text pairs meet WCAG AA.
  */
 :root {
-  /* Surfaces */
-  --c-bg: #07080a;
-  --c-bg-elev: #0c0e12;
-  --c-surface: #111419;
-  --c-surface-2: #171b22;
-  --c-line: rgb(238 235 228 / 0.09);
-  --c-line-strong: rgb(238 235 228 / 0.2);
-
-  /* Text */
-  --c-text: #eeebe4;
-  --c-text-2: #a7adb8;
-  --c-text-3: #808897;
-  --c-text-inverse: #07080a;
-
-  /* Meaningful accents */
-  --c-signal: #5b7cff;
-  --c-signal-bright: #94a8ff;
-  /* Fill behind white text: 5.4:1 with #fff (WCAG AA). --c-signal itself is for marks and text on dark. */
-  --c-signal-fill: #3f5ce6;
-  /* Blue text on light (warm-white) surfaces: 6.3:1 on #eeebe4. */
-  --c-signal-ink: #2f47c4;
-  --c-signal-dim: rgb(91 124 255 / 0.16);
-  --c-interf: #ffb23f;
-  --c-interf-dim: rgb(255 178 63 / 0.16);
-  --c-verified: #c8f25a;
-  --c-verified-dim: rgb(200 242 90 / 0.14);
+  /* Palette primitives */
+  --paper: #f1ede4;
+  --paper-2: #e7e1d3;
+  --paper-3: #d9d1bf;
+  --ink: #15161a;
+  --ink-2: #4b4a47;
+  --ink-3: #66645e;
+  --cobalt: #2f45d6;
+  --cobalt-deep: #2a3cc0;
+  --mineral: #b9c4ff;
+  --indigo: #191d55;
+  --indigo-2: #232873;
+  --copper: #9c4322;
+  --copper-ink: #9a4420;
+  --amber: #f0b46e;
+  --forest: #256046;
+  --lime: #c5e48a;
+  --night: #0d0e12;
 
   /* Typography */
   --font-display: 'Bricolage Grotesque Variable', 'Inter Variable', system-ui, sans-serif;
   --font-sans: 'Inter Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-mono: 'JetBrains Mono Variable', ui-monospace, 'SFMono-Regular', Menlo, monospace;
-  --font-serif: 'Instrument Serif', Georgia, serif;
+  --font-serif: 'Instrument Serif', Georgia, 'Times New Roman', serif;
+  /* Condensed width for oversized headlines (Bricolage wdth axis 75–100). */
+  --display-stretch: 78%;
 
   --fs-label: 0.6875rem;
   --fs-sm: 0.875rem;
   --fs-base: 1.0625rem;
   --fs-lead: clamp(1.125rem, 1rem + 0.45vw, 1.4rem);
   --fs-h4: clamp(1.15rem, 1.05rem + 0.4vw, 1.35rem);
-  --fs-h3: clamp(1.45rem, 1.15rem + 1.1vw, 2.1rem);
-  --fs-h2: clamp(2.4rem, 1.2rem + 4.6vw, 6rem);
-  --fs-display: clamp(3.1rem, 0.9rem + 8.6vw, 11rem);
+  --fs-h3: clamp(1.6rem, 1.2rem + 1.4vw, 2.6rem);
+  --fs-h2: clamp(3rem, 1.2rem + 6.4vw, 8.5rem);
+  --fs-display: clamp(3.6rem, 0.6rem + 11vw, 15rem);
 
-  --lh-tight: 0.92;
+  --lh-tight: 0.86;
   --lh-snug: 1.12;
   --lh-body: 1.6;
-  --tracking-display: -0.045em;
+  --tracking-display: -0.035em;
   --tracking-label: 0.14em;
 
   /* Spacing (4px base) */
@@ -68,8 +68,8 @@
   --s-10: 8rem;
   --s-11: 12rem;
   --gutter: clamp(16px, 4vw, 56px);
-  --section-pad: clamp(4.5rem, 2.5rem + 6vw, 9rem);
-  --max-w: 1600px;
+  --section-pad: clamp(5rem, 3rem + 7vw, 11rem);
+  --max-w: 1680px;
   --nav-h: 72px;
 
   /* Shape */
@@ -77,13 +77,17 @@
   --r-sm: 8px;
   --r-md: 14px;
   --r-lg: 22px;
-  --r-xl: 32px;
+  --r-xl: 36px;
   --r-pill: 999px;
   --border: 1px solid var(--c-line);
   --border-strong: 1px solid var(--c-line-strong);
-  --shadow-lift: 0 30px 80px -30px rgb(0 0 0 / 0.65), 0 0 0 1px var(--c-line);
 
-  /* Motion */
+  /*
+   * Motion language. One family of curves, three durations.
+   *   ease-out    — everything that arrives (text lines, images, panels)
+   *   ease-in-out — things that travel between two states (tabs, the signal pulse)
+   *   scrub       — scroll-linked transforms are linear in scroll position (no easing)
+   */
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
   --ease-spring: cubic-bezier(0.34, 1.4, 0.64, 1);
@@ -101,6 +105,120 @@
   --z-cursor: 80;
   --z-loader: 90;
   --z-skip: 100;
+}
+
+/* ───────────── Themes (semantic colours) ───────────── */
+
+:root,
+.theme-paper {
+  --c-bg: var(--paper);
+  --c-bg-elev: #f7f4ed;
+  --c-surface: #ebe6da;
+  --c-surface-2: #e2dccd;
+  --c-line: rgb(21 22 26 / 0.12);
+  --c-line-strong: rgb(21 22 26 / 0.28);
+  --c-text: var(--ink);
+  --c-text-2: var(--ink-2);
+  --c-text-3: var(--ink-3);
+  --c-text-inverse: var(--paper);
+  --c-signal: var(--cobalt);
+  --c-signal-bright: var(--cobalt);
+  --c-signal-fill: var(--cobalt);
+  --c-signal-ink: var(--cobalt-deep);
+  --c-signal-dim: rgb(47 69 214 / 0.1);
+  --c-interf: var(--copper-ink);
+  --c-interf-dim: rgb(156 67 34 / 0.12);
+  --c-verified: var(--forest);
+  --c-verified-dim: rgb(37 96 70 / 0.12);
+  --shadow-lift: 0 40px 80px -40px rgb(40 30 10 / 0.35), 0 0 0 1px var(--c-line);
+  color-scheme: light;
+}
+
+.theme-sand {
+  --c-bg: var(--paper-2);
+  --c-bg-elev: #efeadf;
+  --c-surface: #ddd6c6;
+  --c-text-2: #45443f;
+  --c-text-3: #5c5a54;
+  color-scheme: light;
+}
+
+.theme-indigo {
+  --c-bg: var(--indigo);
+  --c-bg-elev: #1f2462;
+  --c-surface: #232870;
+  --c-surface-2: #2a3080;
+  --c-line: rgb(241 237 228 / 0.14);
+  --c-line-strong: rgb(241 237 228 / 0.32);
+  --c-text: var(--paper);
+  --c-text-2: #c3c8ec;
+  --c-text-3: #9aa2dc;
+  --c-text-inverse: var(--indigo);
+  --c-signal: #8f9cff;
+  --c-signal-bright: var(--mineral);
+  --c-signal-fill: var(--cobalt);
+  --c-signal-ink: var(--mineral);
+  --c-signal-dim: rgb(185 196 255 / 0.14);
+  --c-interf: var(--amber);
+  --c-interf-dim: rgb(240 180 110 / 0.16);
+  --c-verified: var(--lime);
+  --c-verified-dim: rgb(197 228 138 / 0.14);
+  color-scheme: dark;
+}
+
+.theme-night {
+  --c-bg: var(--night);
+  --c-bg-elev: #13151b;
+  --c-surface: #171a21;
+  --c-surface-2: #1d2029;
+  --c-line: rgb(241 237 228 / 0.1);
+  --c-line-strong: rgb(241 237 228 / 0.22);
+  --c-text: var(--paper);
+  --c-text-2: #a9aeb8;
+  --c-text-3: #848b98;
+  --c-text-inverse: var(--night);
+  --c-signal: #6f86ff;
+  --c-signal-bright: #a2b2ff;
+  --c-signal-fill: #3f5ce6;
+  --c-signal-ink: #a2b2ff;
+  --c-signal-dim: rgb(111 134 255 / 0.16);
+  --c-interf: var(--amber);
+  --c-interf-dim: rgb(240 180 110 / 0.16);
+  --c-verified: var(--lime);
+  --c-verified-dim: rgb(197 228 138 / 0.14);
+  --shadow-lift: 0 30px 80px -30px rgb(0 0 0 / 0.65), 0 0 0 1px var(--c-line);
+  color-scheme: dark;
+}
+
+.theme-copper {
+  --c-bg: var(--copper);
+  --c-bg-elev: #a64b28;
+  --c-surface: #ab5130;
+  --c-line: rgb(241 237 228 / 0.2);
+  --c-line-strong: rgb(241 237 228 / 0.42);
+  --c-text: var(--paper);
+  --c-text-2: #f8e2d2;
+  --c-text-3: #f6d9c4;
+  --c-text-inverse: var(--copper);
+  --c-signal: var(--paper);
+  --c-signal-bright: var(--paper);
+  --c-signal-fill: var(--ink);
+  --c-signal-ink: var(--paper);
+  --c-signal-dim: rgb(241 237 228 / 0.14);
+  --c-interf: #ffd9a8;
+  --c-interf-dim: rgb(255 217 168 / 0.16);
+  --c-verified: var(--lime);
+  --c-verified-dim: rgb(197 228 138 / 0.14);
+  color-scheme: dark;
+}
+
+.theme-paper,
+.theme-sand,
+.theme-indigo,
+.theme-night,
+.theme-copper {
+  background-color: var(--c-bg);
+  color: var(--c-text);
 }
 
 @media (max-width: 620px) {

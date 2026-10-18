@@ -10,6 +10,10 @@
 .cursor[data-visible='true'] {
   opacity: 1;
 }
+/* Difference blending keeps the ring visible on paper, indigo and night alike. */
+.cursor:not([data-state='label']) {
+  mix-blend-mode: difference;
+}
 .ring {
   position: absolute;
   left: -14px;
@@ -17,7 +21,7 @@
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  border: 1px solid rgb(238 235 228 / 0.55);
+  border: 1px solid #fff;
   transition:
     transform 380ms var(--ease-out),
     background-color 380ms var(--ease-out),
@@ -25,13 +29,13 @@
 }
 .cursor[data-state='hover'] .ring {
   transform: scale(1.6);
-  border-color: var(--c-signal-bright);
-  background: rgb(91 124 255 / 0.08);
+  border-color: #fff;
+  background: rgb(255 255 255 / 0.1);
 }
 .cursor[data-state='label'] .ring {
   transform: scale(3.2);
   border-color: transparent;
-  background: var(--c-signal-fill);
+  background: var(--cobalt);
 }
 .label {
   position: absolute;

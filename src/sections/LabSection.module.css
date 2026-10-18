@@ -1,0 +1,36 @@
+.lab {
+  padding-bottom: calc(var(--section-pad) + var(--r-xl));
+}
+.lab :global(.section-head__title .serif) {
+  color: var(--c-interf);
+}
+.specs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 2rem;
+  margin: calc(clamp(3rem, 2rem + 4vw, 6rem) * -0.5) 0 1.5rem;
+  font-family: var(--font-mono);
+  font-size: var(--fs-label);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--c-text-2);
+}
+.specs span::before {
+  content: '+ ';
+  color: var(--c-text-3);
+}
+/* The instrument: a dark, precise object set into the warm page — the only dark surface in the chapter. */
+.instrument {
+  min-height: 640px;
+  padding: clamp(1rem, 2.4vw, 2.25rem);
+  border-radius: var(--r-xl);
+  box-shadow:
+    0 50px 100px -50px rgb(40 26 8 / 0.55),
+    0 0 0 1px rgb(0 0 0 / 0.4);
+}
+@media (max-width: 600px) {
+  .instrument {
+    margin-inline: calc(var(--gutter) * -0.5);
+    border-radius: var(--r-lg);
+  }
+}

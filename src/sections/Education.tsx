@@ -18,13 +18,13 @@ export function Education() {
   const totalPages = notebooks.reduce((s, n) => s + n.pages, 0)
 
   return (
-    <section id="education" className="section" aria-labelledby="education-title">
+    <section id="education" className={`section sheet theme-sand ${styles.education}`} data-nav="light" aria-labelledby="education-title">
       <div className="container">
-        <SectionHead index={meta.index} label={meta.label} id="education-title" title="Education & learning." />
+        <SectionHead index={meta.index} label={meta.label} id="education-title" title="Education & / *learning.*" />
 
         <ul className={styles.creds} role="list">
-          {credentials.map((c, i) => (
-            <li key={c.title} className={`${styles.cred} ${c.image ? styles.withImage : ''}`} data-reveal style={{ ['--reveal-delay' as string]: `${i * 80}ms` }}>
+          {credentials.map((c) => (
+            <li key={c.title} className={`${styles.cred} ${c.image ? styles.withImage : styles.textOnly}`}>
               {c.image ? (
                 <div className={styles.thumb}>
                   <img src={c.image} alt={`Certificate: ${c.title}, ${c.issuer}`} loading="lazy" decoding="async" width="900" height="690" />

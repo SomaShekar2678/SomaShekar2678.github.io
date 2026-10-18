@@ -25,6 +25,7 @@ function JourneyImmersive({ onFail }: { onFail: () => void }) {
   const sectionRef = useRef<HTMLElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const barRef = useRef<HTMLSpanElement>(null)
+  const stageRef = useRef<HTMLDivElement>(null)
   const sceneRef = useRef<JourneyScene | null>(null)
   const [active, setActive] = useState(0)
   const near = useInView(sectionRef, { rootMargin: '100% 0px', once: true })
@@ -58,6 +59,18 @@ function JourneyImmersive({ onFail }: { onFail: () => void }) {
     const update = () => {
       raf = 0
       const r = section.getBoundingClientRect()
+      // Aperture: while the section rises into view, the dark stage is revealed through a widening circle.
+      const stage = stageRef.current
+      if (stage) {
+        const vh = window.innerHeight
+        const enter = Math.min(1, Math.max(0, 1 - r.top / vh))
+        if (enter >= 1) stage.style.clipPath = ''
+        else {
+          const e = enter * enter * (3 - 2 * enter)
+          const full = Math.hypot(window.innerWidth, vh) / 2 + 2
+          stage.style.clipPath = `circle(${(full * (0.08 + 0.92 * e)).toFixed(1)}px at 50% 50%)`
+        }
+      }
       const span = r.height - window.innerHeight
       const p = span > 0 ? Math.min(1, Math.max(0, -r.top / span)) : 0
       sceneRef.current?.setProgress(p)
@@ -101,8 +114,15 @@ function JourneyImmersive({ onFail }: { onFail: () => void }) {
   }, [near])
 
   return (
-    <section ref={sectionRef} id="journey" className={styles.journey} aria-labelledby="journey-title" style={{ height: `${JOURNEY_STAGES * 100 + 60}svh` }}>
-      <div className={styles.stage}>
+    <section
+      ref={sectionRef}
+      id="journey"
+      className={`theme-night ${styles.journey}`}
+      data-nav="dark"
+      aria-labelledby="journey-title"
+      style={{ height: `${JOURNEY_STAGES * 100 + 60}svh` }}
+    >
+      <div ref={stageRef} className={styles.stage}>
         <canvas ref={canvasRef} className={styles.canvas} aria-hidden="true" />
         <div className={styles.scrim} aria-hidden="true" />
 
@@ -194,15 +214,16 @@ function StageArt({ id }: { id: (typeof journey.stages)[number]['id'] }) {
 
 function JourneyPanels() {
   return (
-    <section id="journey" className={`section ${styles.panels}`} aria-labelledby="journey-title">
+    <section id="journey" className={`section theme-night ${styles.panels}`} data-nav="dark" aria-labelledby="journey-title">
       <div className="container">
         <header className={styles.panelsHead}>
+          <p className="label">Interlude</p>
           <h2 id="journey-title" className="display">
             {journey.title}
           </h2>
           <p className="lead">{journey.intro}</p>
         </header>
-        <ol className={styles.grid} role="list">
+        <ol className={styles.grid} role="list" tabIndex={0} aria-label="The six stages of the signal's journey">
           {journey.stages.map((s, i) => (
             <li key={s.id} className={styles.panel} data-reveal>
               <div className={styles.art}>

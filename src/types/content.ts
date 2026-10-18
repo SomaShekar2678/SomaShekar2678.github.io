@@ -100,6 +100,13 @@ export interface Project {
   statusNote: string
   featured: boolean
   cover: CoverKind
+  /**
+   * Rendered cover image (public/covers/<name>-{800,1600}.webp), produced by `npm run covers`
+   * from the project's own mathematics. Featured projects only.
+   */
+  image?: { name: string; alt: string }
+  /** The project's colour identity, used behind its cover and on its case-study page. */
+  tone?: 'cobalt' | 'paper' | 'copper' | 'sage' | 'night'
   metrics: Metric[]
   caseStudy: CaseStudy
   evidence: { source: EvidenceSource; note: string }[]

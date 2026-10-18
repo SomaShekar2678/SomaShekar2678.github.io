@@ -14,18 +14,41 @@ export function Nav({ route }: { route: Route }) {
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
 
+  const [tone, setTone] = useState<'light' | 'dark'>('light')
+
+  // The nav sits over chapters of different colours: read the tone of whatever is under it.
+  // Chapters declare it with data-nav="dark"; everything else is light paper.
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 24)
-    onScroll()
+    let raf = 0
+    const measure = () => {
+      raf = 0
+      setScrolled(window.scrollY > 24)
+      const y = 36
+      let next: 'light' | 'dark' = 'light'
+      for (const el of document.querySelectorAll<HTMLElement>('[data-nav]')) {
+        const r = el.getBoundingClientRect()
+        if (r.top <= y && r.bottom > y) next = el.dataset.nav === 'dark' ? 'dark' : 'light'
+      }
+      setTone(next)
+    }
+    const onScroll = () => {
+      if (!raf) raf = requestAnimationFrame(measure)
+    }
+    measure()
     window.addEventListener('scroll', onScroll, { passive: true })
-    return () => window.removeEventListener('scroll', onScroll)
-  }, [])
+    window.addEventListener('resize', onScroll)
+    return () => {
+      cancelAnimationFrame(raf)
+      window.removeEventListener('scroll', onScroll)
+      window.removeEventListener('resize', onScroll)
+    }
+  }, [route.name])
 
   const current = sections.find((s) => s.id === active)
   const where = isHome ? (current && current.id !== 'top' ? `${current.index} / ${current.label}` : 'Index') : route.name === 'project' ? 'Case study' : 'Not found'
 
   return (
-    <header className={`${styles.nav} ${scrolled ? styles.scrolled : ''}`}>
+    <header className={`${styles.nav} ${scrolled ? styles.scrolled : ''} ${tone === 'dark' ? 'theme-night' : 'theme-paper'}`} data-tone={tone}>
       <a className={styles.mark} href="#top" aria-label={`${profile.name} — back to top`}>
         <span className={styles.markName}>{profile.shortName}</span>
         <span className={styles.markRole}>{profile.role}</span>

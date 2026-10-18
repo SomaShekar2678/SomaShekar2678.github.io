@@ -10,7 +10,7 @@
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--c-text);
-  background: rgb(7 8 10 / 0.6);
+  background: color-mix(in srgb, var(--c-bg) 88%, transparent);
   white-space: nowrap;
 }
 .sm {

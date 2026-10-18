@@ -198,3 +198,55 @@ export function sampleSky(map: Float32Array, navAz: number, el: number, grid: Sk
   const v11 = map[j1 * grid.nAz + i1]!
   return (v00 * (1 - tx) + v10 * tx) * (1 - ty) + (v01 * (1 - tx) + v11 * tx) * ty
 }
+
+export interface MethodCut {
+  /** Elevation of the cut (the first active jammer's, else the satellite's), degrees. */
+  el: number
+  /** Navigation azimuths sampled, degrees. */
+  az: Float32Array
+  /** Response in dB relative to the response toward the satellite (0 dB = distortionless gain). */
+  db: Record<Method, Float32Array>
+  /** Same normalisation, evaluated exactly at each active jammer. */
+  atJammers: Record<Method, number[]>
+}
+
+/**
+ * Azimuth cut through the sky for all three beamformers on the same covariance, so they can be compared
+ * on one axis. LCMV uses the MUSIC estimates from `computeLab`, exactly as the main view does.
+ */
+export function compareCut(p: LabParams, estimates: LabResult['estimates'], step = 1): MethodCut {
+  const g = ura(p.size, p.size, p.spacing)
+  const sat: Source = { az: navToMath(p.satAz), el: p.satEl, powerDb: SAT_SNR_DB }
+  const active = p.jammers.filter((j) => j.on)
+  const jams: Source[] = active.map((j) => ({ az: navToMath(j.az), el: j.el, powerDb: j.jnr }))
+  const R = diagonalLoad(sampleCovariance(g, [sat, ...jams], p.snapshots, p.seed), 1e-4)
+  const as = steering(g, sat.az, sat.el)
+  const weights: Record<Method, CVec> = {
+    conventional: conventionalWeights(as),
+    mvdr: jams.length ? mvdrWeights(R, as) : conventionalWeights(as),
+    lcmv: conventionalWeights(as),
+  }
+  if (jams.length) {
+    try {
+      const cons = [as, ...estimates.map((e) => steering(g, navToMath(e.navAz), e.el))]
+      weights.lcmv = lcmvWeights(R, cons, [1, ...estimates.map(() => 0)])
+    } catch {
+      weights.lcmv = weights.mvdr
+    }
+  }
+  const el = active[0]?.el ?? p.satEl
+  const n = Math.round(360 / step)
+  const az = new Float32Array(n)
+  for (let i = 0; i < n; i++) az[i] = i * step
+  const db = {} as Record<Method, Float32Array>
+  const atJammers = {} as Record<Method, number[]>
+  for (const m of ['conventional', 'mvdr', 'lcmv'] as Method[]) {
+    const w = weights[m]
+    const ref = powerResponse(w, g, sat.az, sat.el)
+    const out = new Float32Array(n)
+    for (let i = 0; i < n; i++) out[i] = linToDb(powerResponse(w, g, navToMath(az[i]!), el) / ref)
+    db[m] = out
+    atJammers[m] = jams.map((j) => linToDb(powerResponse(w, g, j.az, j.el) / ref))
+  }
+  return { el, az, db, atJammers }
+}

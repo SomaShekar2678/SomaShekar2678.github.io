@@ -45,7 +45,7 @@ export function Menu({ open, onClose, active }: Props) {
   }
 
   return (
-    <dialog ref={ref} className={styles.menu} aria-label="Site menu">
+    <dialog ref={ref} className={`theme-indigo ${styles.menu}`} aria-label="Site menu">
       <div className={styles.inner}>
         <div className={styles.head}>
           <span className="label">Navigate</span>

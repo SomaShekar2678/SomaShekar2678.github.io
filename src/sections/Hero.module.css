@@ -1,73 +1,46 @@
+/*
+ * Hero: an editorial spread on paper. Statement top-left, the beam sculpture right of centre,
+ * a figure caption with the live readout, and the name set across the bottom edge.
+ */
 .hero {
   position: relative;
-  padding-top: var(--nav-h);
-}
-
-.window {
-  --inset: var(--gutter);
-  --radius: var(--r-xl);
-  position: relative;
-  margin-inline: var(--inset);
-  height: calc(100svh - var(--nav-h) - 58px);
-  min-height: 560px;
-  max-height: 1100px;
-  border-radius: var(--radius);
+  min-height: max(100svh, 680px);
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  grid-template-rows: var(--nav-h) auto 1fr auto auto;
+  column-gap: var(--s-5);
+  padding-inline: var(--gutter);
   overflow: hidden;
-  background: var(--c-bg);
-  box-shadow: 0 0 0 1px var(--c-line);
   isolation: isolate;
-  touch-action: pan-y;
 }
 
-.canvas {
+.canvas,
+.poster {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
-  opacity: 0;
-  animation: fadeIn 1.4s var(--ease-out) 0.15s forwards;
+  z-index: 0;
 }
-
-@keyframes fadeIn {
-  to {
-    opacity: 1;
-  }
+.canvas {
+  touch-action: pan-y;
 }
-
-.fallback {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  color: var(--c-text-2);
-  background:
-    radial-gradient(60% 60% at 60% 35%, rgb(91 124 255 / 0.12), transparent 70%),
-    var(--c-bg);
-}
-.fallbackPlot {
-  width: min(62vh, 70%);
-  transform: translate(12%, -14%);
-}
-
-.scrim {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background:
-    linear-gradient(to top, rgb(7 8 10 / 0.94) 0%, rgb(7 8 10 / 0.6) 30%, transparent 58%),
-    linear-gradient(to right, rgb(7 8 10 / 0.55), transparent 45%);
+.poster {
+  object-fit: cover;
+  object-position: 68% 40%;
 }
 
 .labels {
   position: absolute;
   inset: 0;
   pointer-events: none;
+  z-index: 1;
 }
 .tag {
   position: absolute;
   left: 0;
   top: 0;
-  margin: -9px 0 0 14px;
+  margin: -34px 0 0 34px;
   display: inline-flex;
   gap: 0.5em;
   font-family: var(--font-mono);
@@ -75,7 +48,7 @@
   font-weight: 600;
   letter-spacing: 0.14em;
   white-space: nowrap;
-  transition: opacity var(--t-med);
+  opacity: 0;
   will-change: transform;
 }
 .tag em {
@@ -85,212 +58,249 @@
   letter-spacing: 0.08em;
 }
 .tagSat {
-  color: var(--c-signal-bright);
+  color: var(--c-signal-ink);
 }
 .tagJam {
   color: var(--c-interf);
 }
 
-.readout {
-  position: absolute;
-  top: clamp(14px, 2.2vw, 28px);
-  right: clamp(14px, 2.2vw, 28px);
-  width: min(300px, 42%);
-  display: grid;
-  gap: 0.45rem;
-  padding: 14px 16px;
-  border: var(--border);
-  border-radius: var(--r-md);
-  background: rgb(7 8 10 / 0.62);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+/* ─── Intro block ─── */
+.intro {
+  grid-column: 1 / span 5;
+  grid-row: 2;
   z-index: 2;
-}
-.liveDot {
-  display: inline-block;
-  width: 6px;
-  height: 6px;
-  margin-right: 0.4em;
-  border-radius: 50%;
-  background: var(--c-verified);
-  vertical-align: 1px;
-}
-.readoutRow {
-  display: flex;
-  justify-content: space-between;
-  gap: 1rem;
-  font-family: var(--font-mono);
-  font-size: 0.72rem;
-  color: var(--c-text-2);
-}
-.readoutRow strong {
-  color: var(--c-interf);
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-}
-.hint {
-  font-size: 0.78rem;
-  line-height: 1.4;
-  color: var(--c-text-3);
-}
-.aboutBtn {
-  justify-self: start;
-  padding: 0.3rem 0;
-  min-height: 32px;
-  border: 0;
-  background: none;
-  font-family: var(--font-mono);
-  font-size: var(--fs-label);
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--c-text);
-  text-decoration: underline;
-  text-underline-offset: 0.3em;
-  text-decoration-color: var(--c-line-strong);
-}
-.aboutBtn:hover {
-  text-decoration-color: currentColor;
-}
-.note {
-  font-size: 0.8rem;
-  line-height: 1.5;
-  color: var(--c-text-2);
-}
-
-.copy {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 1;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: end;
-  gap: 2rem 3rem;
-  padding: clamp(20px, 3vw, 44px);
-}
-.role {
-  grid-column: 1 / -1;
-  color: var(--c-text);
-}
-.name {
-  font-size: var(--fs-display);
-  margin-left: -0.04em;
-}
-.line {
-  display: block;
-  overflow: hidden;
-  padding-bottom: 0.06em;
-}
-.line > span {
-  display: block;
-}
-:global(html.motion) .line > span {
-  transform: translate3d(0, 106%, 0);
-}
-:global(html.motion[data-loading='false']) .line > span {
-  transform: none;
-  transition: transform 1.3s var(--ease-out);
-}
-:global(html.motion[data-loading='false']) .line:nth-child(2) > span {
-  transition-delay: 90ms;
-}
-.dot {
-  color: var(--c-signal);
-}
-.side {
   display: grid;
   gap: 1.4rem;
-  max-width: 25rem;
-  padding-bottom: 0.6rem;
+  align-content: start;
+  padding-top: clamp(1.5rem, 5vh, 4.5rem);
+  max-width: 34rem;
+}
+.role {
+  color: var(--c-text-2);
 }
 .statement {
-  font-size: var(--fs-lead);
-  line-height: 1.45;
-  color: var(--c-text);
+  font-family: var(--font-display);
+  font-weight: 560;
+  font-size: clamp(2rem, 1.1rem + 2.3vw, 3.4rem);
+  line-height: 0.98;
+  letter-spacing: -0.03em;
+  text-wrap: balance;
+}
+.statement :global(.serif) {
+  color: var(--c-signal-ink);
+  font-size: 1.06em;
+}
+.sub {
+  max-width: 36ch;
+  color: var(--c-text-2);
   text-wrap: pretty;
 }
 .ctas {
   display: flex;
   flex-wrap: wrap;
   gap: 0.6rem;
+  margin-top: 0.4rem;
 }
 
-.reg {
-  padding-block: 20px;
+/* ─── Figure caption with the live readout ─── */
+.fig {
+  grid-column: 10 / -1;
+  grid-row: 2;
+  z-index: 2;
+  margin: 0;
+  padding-top: clamp(1.5rem, 5vh, 4.5rem);
+  justify-self: end;
+  align-self: start;
+  max-width: 21rem;
 }
-.scrollCue {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.6rem;
+.fig figcaption {
+  display: grid;
+  gap: 0.5rem;
+  padding-top: 0.7rem;
+  border-top: 1px solid var(--c-line-strong);
+}
+.readout {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1.25rem;
+  font-family: var(--font-mono);
+  font-size: var(--fs-label);
+  letter-spacing: 0.06em;
+  color: var(--c-text-2);
+}
+.readout strong {
+  color: var(--c-interf);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.hint {
+  color: var(--c-text-3);
+}
+.aboutBtn {
+  justify-self: start;
+  min-height: 32px;
+  padding: 0;
+  border: 0;
+  background: none;
+  font-family: var(--font-mono);
+  font-size: var(--fs-label);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-decoration: underline;
+  text-underline-offset: 0.3em;
+  color: var(--c-text);
+}
+.note {
+  margin-top: 0.6rem;
+  padding: 0.9rem 1rem;
+  border-radius: var(--r-md);
+  background: var(--c-bg-elev);
+  box-shadow: 0 0 0 1px var(--c-line);
+  font-size: var(--fs-sm);
+  color: var(--c-text-2);
+}
+
+/* ─── The name ─── */
+.name {
+  grid-column: 1 / -1;
+  grid-row: 4;
+  z-index: 2;
+  display: grid;
+  font-size: clamp(4.2rem, 0.4rem + 11.6vw, 15rem);
+  font-stretch: 76%;
+  font-weight: 640;
+  line-height: 0.8;
+  letter-spacing: -0.045em;
+  margin-inline: -0.04em;
+  padding-right: 0.06em;
+  pointer-events: none;
+}
+.line1,
+.line2 {
+  display: block;
+  white-space: nowrap;
+  will-change: transform;
+}
+.line2 {
+  justify-self: end;
+}
+.dot {
+  color: var(--c-signal);
+}
+
+.foot {
+  grid-column: 1 / -1;
+  grid-row: 5;
+  z-index: 2;
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-block: 1.1rem 1.4rem;
+  font-family: var(--font-mono);
+  font-size: var(--fs-label);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--c-text-3);
 }
 .scrollCue::after {
   content: '';
+  display: inline-block;
   width: 1px;
-  height: 14px;
+  height: 0.9em;
+  margin-left: 0.7em;
+  vertical-align: -0.1em;
   background: currentColor;
-  transform-origin: top;
-  animation: cue 2.2s var(--ease-in-out) infinite;
+  animation: cue 2.4s var(--ease-in-out) infinite;
 }
 @keyframes cue {
-  0% {
-    transform: scaleY(0);
+  0%,
+  100% {
+    transform: scaleY(0.3);
+    transform-origin: top;
   }
   50% {
     transform: scaleY(1);
-    transform-origin: top;
   }
-  51% {
-    transform-origin: bottom;
-  }
-  100% {
-    transform: scaleY(0);
-    transform-origin: bottom;
-  }
+}
+
+/* Entrance: the name rises from below its baseline after the loader leaves. */
+:global(html.motion[data-loading='true']) .line1,
+:global(html.motion[data-loading='true']) .line2 {
+  transform: translateY(105%);
+}
+:global(html.motion[data-loading='true']) .intro {
+  opacity: 0;
+}
+.line1,
+.line2,
+.intro {
+  transition:
+    transform 1400ms var(--ease-out),
+    opacity 1000ms var(--ease-out);
+}
+.line2 {
+  transition-delay: 90ms;
+}
+.intro {
+  transition-delay: 300ms;
+}
+.name {
+  overflow: hidden;
+  padding-bottom: 0.04em;
 }
 
 @media (max-width: 1100px) {
-  .copy {
-    grid-template-columns: 1fr;
+  .intro {
+    grid-column: 1 / span 7;
   }
-  .side {
-    max-width: 34rem;
+  .fig {
+    grid-column: 8 / -1;
   }
 }
 
-@media (max-width: 760px) {
-  .window {
-    height: auto;
-    min-height: 0;
-    max-height: none;
+/* Phones and portrait tablets: the name, then the sculpture, then the statement. */
+@media (max-width: 760px), (max-width: 1100px) and (orientation: portrait) {
+  .hero {
+    grid-template-rows: var(--nav-h) auto minmax(40svh, 1fr) auto auto auto;
+    min-height: max(100svh, 760px);
   }
-  .canvas,
-  .fallback {
-    height: 62svh;
-    bottom: auto;
+  .intro {
+    grid-column: 1 / -1;
+    grid-row: 4;
+    padding-top: 0;
+    gap: 0.9rem;
   }
-  .scrim {
-    background: linear-gradient(to top, var(--c-bg) 38%, rgb(7 8 10 / 0.5) 62%, transparent 80%);
+  .statement {
+    font-size: clamp(1.9rem, 1rem + 4.4vw, 2.6rem);
   }
-  .copy {
-    position: relative;
-    padding-top: calc(62svh - 150px);
-    gap: 1.25rem;
+  .sub {
+    font-size: var(--fs-sm);
   }
-  .readout {
-    left: 12px;
-    right: 12px;
-    top: 12px;
-    width: auto;
-    padding: 10px 12px;
-    gap: 0.25rem;
+  .fig {
+    grid-column: 1 / -1;
+    grid-row: 5;
+    justify-self: stretch;
+    max-width: none;
+    padding-top: 1.75rem;
   }
-  .hint,
-  .rowAz,
-  .tag em {
+  .name {
+    grid-row: 2;
+    padding-top: 0.5rem;
+  }
+  .line2 {
+    justify-self: start;
+  }
+  .foot {
+    grid-row: 6;
+  }
+  .hint {
     display: none;
   }
-  .regHideSm {
+  .name {
+    font-size: clamp(3.6rem, 0.4rem + 17.4vw, 9rem);
+    line-height: 0.82;
+  }
+  .foot span:first-child {
     display: none;
   }
 }

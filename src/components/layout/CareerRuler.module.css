@@ -1,0 +1,161 @@
+.ruler {
+  margin: 0 0 clamp(4rem, 3rem + 4vw, 7rem);
+}
+.track {
+  position: relative;
+  display: grid;
+  gap: 0.6rem;
+  padding: 1.2rem 0 2.2rem;
+  border-top: 2px solid var(--c-text);
+}
+.row {
+  position: relative;
+  height: 44px;
+  border-bottom: var(--border);
+}
+.rowLabel {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--c-text-3);
+}
+.bar {
+  position: absolute;
+  top: 8px;
+  bottom: 8px;
+  display: flex;
+  align-items: center;
+  min-width: 6px;
+  border-radius: 4px;
+  background: var(--c-text);
+  color: var(--c-text-inverse);
+  overflow: visible;
+  white-space: nowrap;
+}
+.bar em {
+  font-style: normal;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  padding-left: 0.6rem;
+}
+/* Short bars (roles under a year) put their label outside, above the bar. */
+.bar:not(.edu) em {
+  position: absolute;
+  left: 0;
+  bottom: calc(100% + 4px);
+  padding-left: 0;
+  color: var(--c-text-2);
+}
+.below em {
+  bottom: auto !important;
+  top: calc(100% + 4px);
+}
+.edu {
+  background: repeating-linear-gradient(135deg, var(--c-text) 0 2px, transparent 2px 6px);
+  box-shadow: inset 0 0 0 1px var(--c-text);
+  color: var(--c-text);
+}
+.edu em {
+  background: var(--c-bg);
+  padding: 0.1rem 0.5rem;
+  margin-left: 0.4rem;
+  border-radius: 3px;
+}
+.current {
+  background: var(--c-signal);
+  border-radius: 4px 0 0 4px;
+}
+.current::after {
+  content: '';
+  position: absolute;
+  right: -6px;
+  top: 50%;
+  border: 6px solid transparent;
+  border-left-color: var(--c-signal);
+  transform: translate(6px, -50%);
+}
+.tick {
+  position: absolute;
+  bottom: 0;
+  width: 2px;
+  background: var(--c-interf);
+}
+.cert {
+  position: absolute;
+  top: 50%;
+  width: 10px;
+  height: 10px;
+  margin: -5px 0 0 -5px;
+  border-radius: 50%;
+  background: var(--c-verified);
+}
+.years {
+  position: relative;
+  height: 1rem;
+}
+.years span {
+  position: absolute;
+  transform: translateX(-50%);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  color: var(--c-text-3);
+}
+.years span:first-child {
+  transform: none;
+}
+.now {
+  top: 1.1rem;
+  color: var(--c-signal-ink) !important;
+  font-weight: 600;
+}
+.key {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+}
+.keyHatch,
+.keyTick,
+.keyCert {
+  display: inline-block;
+  vertical-align: middle;
+}
+.keyHatch {
+  width: 18px;
+  height: 10px;
+  background: repeating-linear-gradient(135deg, var(--c-text) 0 2px, transparent 2px 5px);
+  box-shadow: inset 0 0 0 1px var(--c-text);
+}
+.keyTick {
+  width: 2px;
+  height: 12px;
+  background: var(--c-interf);
+}
+.keyCert {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--c-verified);
+}
+@media (max-width: 700px) {
+  .rowLabel,
+  .bar:not(.edu) em {
+    display: none;
+  }
+  .bar em {
+    font-size: 9px;
+  }
+  .edu em {
+    padding: 0.05rem 0.3rem;
+  }
+  .years span:nth-child(even):not(.now) {
+    display: none;
+  }
+}

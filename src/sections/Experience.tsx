@@ -1,28 +1,27 @@
 import { experience } from '../content/profile'
 import { sectionMeta } from '../content/site'
 import { SectionHead } from '../components/layout/SectionHead'
+import { CareerRuler } from '../components/layout/CareerRuler'
 import styles from './Experience.module.css'
 
 export function ExperienceSection() {
   const meta = sectionMeta('experience')
   return (
-    <section id="experience" className="section" aria-labelledby="experience-title">
+    <section id="experience" className={`section sheet theme-paper ${styles.experience}`} data-nav="light" aria-labelledby="experience-title">
       <div className="container">
         <SectionHead
           index={meta.index}
           label={meta.label}
           id="experience-title"
-          title="Where the work happened."
+          title="Where the work / *happened.*"
           aside="Responsibilities as stated on my résumé. Client names, confidential deliverables and internal metrics are deliberately left out."
         />
-        <ol className={styles.timeline} role="list">
+        <CareerRuler />
+        <ol className={styles.jobs} role="list">
           {experience.map((job) => (
-            <li key={job.company} className={styles.job} data-reveal>
-              <div className={styles.rail} aria-hidden="true">
-                <span className={styles.node} />
-              </div>
+            <li key={job.company} className={styles.job}>
               <header className={styles.head}>
-                <h3 className={styles.company}>{job.company}</h3>
+                <h3 className={`display ${styles.company}`}>{job.company}</h3>
                 <p className={styles.location}>{job.location}</p>
                 <ol className={styles.roles} role="list">
                   {job.roles.map((r) => (

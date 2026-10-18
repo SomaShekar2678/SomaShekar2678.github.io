@@ -4,7 +4,6 @@ import { completeSceneTasks, completeTask } from '../lib/loading'
 import { deviceTier, finePointer, hasWebGL, useReducedMotion } from '../lib/env'
 import { gsap, ScrollTrigger } from '../lib/motion'
 import { L1_WAVELENGTH_M } from '../lib/beamforming'
-import { BeamPolar } from '../components/visualizations/BeamPolar'
 import type { HeroScene } from '../components/three/HeroScene'
 import styles from './Hero.module.css'
 
@@ -13,13 +12,13 @@ export function Hero() {
   const [webgl, setWebgl] = useState(hasWebGL)
   const [aboutOpen, setAboutOpen] = useState(false)
   const sectionRef = useRef<HTMLElement>(null)
-  const windowRef = useRef<HTMLDivElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const satLabel = useRef<HTMLSpanElement>(null)
   const jamLabel = useRef<HTMLSpanElement>(null)
   const nullOut = useRef<HTMLElement>(null)
   const azOut = useRef<HTMLElement>(null)
   const sceneRef = useRef<HeroScene | null>(null)
+  const pointer = finePointer()
 
   // Scene lifecycle: dynamic import (code-split), measured load steps, graceful fallback.
   useEffect(() => {
@@ -30,8 +29,8 @@ export function Hero() {
     let cancelled = false
     let scene: HeroScene | null = null
     const canvas = canvasRef.current
-    const win = windowRef.current
-    if (!canvas || !win) return
+    const section = sectionRef.current
+    if (!canvas || !section) return
 
     import('../components/three/HeroScene')
       .then(({ HeroScene }) => {
@@ -41,6 +40,7 @@ export function Hero() {
           canvas,
           tier: deviceTier(),
           reduced,
+          autoSweep: !finePointer(),
           labels: { sat: satLabel.current, jam: jamLabel.current },
           onFirstFrame: () => completeTask('first-frame'),
           onStats: (s) => {
@@ -59,31 +59,31 @@ export function Hero() {
     const ro = new ResizeObserver(() => sceneRef.current?.resize())
     ro.observe(canvas)
     const io = new IntersectionObserver(([e]) => sceneRef.current?.setVisible(!!e?.isIntersecting))
-    io.observe(win)
+    io.observe(section)
     const onVis = () => sceneRef.current?.setVisible(!document.hidden)
     document.addEventListener('visibilitychange', onVis)
     const onMove = (e: PointerEvent) => {
-      const r = win.getBoundingClientRect()
+      if (e.pointerType !== 'mouse') return
+      const r = section.getBoundingClientRect()
       sceneRef.current?.setPointer(((e.clientX - r.left) / r.width) * 2 - 1, ((e.clientY - r.top) / r.height) * 2 - 1)
     }
-    win.addEventListener('pointermove', onMove)
+    section.addEventListener('pointermove', onMove)
 
     return () => {
       cancelled = true
       ro.disconnect()
       io.disconnect()
       document.removeEventListener('visibilitychange', onVis)
-      win.removeEventListener('pointermove', onMove)
+      section.removeEventListener('pointermove', onMove)
       scene?.dispose()
       sceneRef.current = null
     }
   }, [webgl, reduced])
 
-  // Scroll choreography: the instrument window opens to full bleed while the copy lifts away.
+  // Scroll choreography: the camera rises into the beam while the two name lines part.
   useEffect(() => {
     const section = sectionRef.current
-    const win = windowRef.current
-    if (!section || !win) return
+    if (!section) return
     const ctx = gsap.context(() => {
       ScrollTrigger.create({
         trigger: section,
@@ -92,24 +92,10 @@ export function Hero() {
         onUpdate: (self) => sceneRef.current?.setScroll(self.progress),
       })
       if (reduced) return
-      // --gutter is a clamp(); GSAP needs concrete start values, recomputed on refresh.
-      const gutterPx = () => Math.min(56, Math.max(16, window.innerWidth * 0.04))
-      gsap.fromTo(
-        win,
-        { '--inset': () => `${gutterPx()}px`, '--radius': '32px' },
-        {
-          '--inset': '0px',
-          '--radius': '0px',
-          ease: 'none',
-          scrollTrigger: { trigger: section, start: 'top top', end: '60% top', scrub: true, invalidateOnRefresh: true },
-        },
-      )
-      gsap.to(`.${styles.copy}`, {
-        yPercent: -18,
-        opacity: 0,
-        ease: 'none',
-        scrollTrigger: { trigger: section, start: '15% top', end: '70% top', scrub: true },
-      })
+      const scrub = { trigger: section, start: 'top top', end: 'bottom top', scrub: true }
+      gsap.to(`.${styles.line1}`, { xPercent: -14, ease: 'none', scrollTrigger: scrub })
+      gsap.to(`.${styles.line2}`, { xPercent: 10, ease: 'none', scrollTrigger: scrub })
+      gsap.to(`.${styles.intro}`, { yPercent: -40, opacity: 0, ease: 'none', scrollTrigger: { ...scrub, end: '55% top' } })
     }, section)
     return () => ctx.revert()
   }, [reduced])
@@ -117,90 +103,87 @@ export function Hero() {
   const halfLambdaCm = ((L1_WAVELENGTH_M / 2) * 100).toFixed(1)
 
   return (
-    <section id="top" ref={sectionRef} className={styles.hero} aria-labelledby="hero-title">
-      <div ref={windowRef} className={styles.window}>
-        {webgl ? (
-          <canvas ref={canvasRef} className={styles.canvas} aria-hidden="true" />
-        ) : (
-          <div className={styles.fallback}>
-            <BeamPolar className={styles.fallbackPlot} title="Hero visual (static fallback)" />
-          </div>
-        )}
-        {webgl ? (
-          <div className={styles.labels} aria-hidden="true">
-            <span ref={satLabel} className={`${styles.tag} ${styles.tagSat}`}>
-              SAT <em>desired signal</em>
-            </span>
-            <span ref={jamLabel} className={`${styles.tag} ${styles.tagJam}`}>
-              JAM <em>interferer</em>
-            </span>
-          </div>
-        ) : null}
-        <div className={styles.scrim} aria-hidden="true" />
-
-        <div className={styles.readout}>
-          <p className="label">
-            <span className={styles.liveDot} aria-hidden="true" /> 4×4 array · MVDR
-          </p>
-          {webgl ? (
-            <p className={styles.readoutRow}>
-              <span>Response toward interferer</span>
-              <strong ref={nullOut}>— dB</strong>
-            </p>
-          ) : null}
-          {webgl ? (
-            <p className={`${styles.readoutRow} ${styles.rowAz}`}>
-              <span>Interferer azimuth</span>
-              <strong ref={azOut}>—</strong>
-            </p>
-          ) : null}
-          {webgl && finePointer() ? <p className={styles.hint}>Move the pointer to move the interferer — the null follows.</p> : null}
-          <button type="button" className={styles.aboutBtn} aria-expanded={aboutOpen} aria-controls="hero-visual-note" onClick={() => setAboutOpen((v) => !v)}>
-            {aboutOpen ? 'Hide' : 'About this visual'}
-          </button>
-          <p id="hero-visual-note" className={styles.note} hidden={!aboutOpen}>
-            Illustrative, not an RF simulation of real hardware. The beam pattern is computed in your browser: MVDR weights for a 16-element, λ/2-spaced
-            planar array steered to the blue satellite, with a 40 dB interferer on the horizon. The ideal model produces nulls far deeper than real hardware (calibration, quantisation and bandwidth limit them), so anything below −60 dB is shown as “&lt; −60 dB”. The ground ripples show a plane wave and a spherical
-            wave interfering; they are not to scale.
-          </p>
+    <section id="top" ref={sectionRef} className={`theme-paper ${styles.hero}`} data-nav="light" aria-labelledby="hero-title">
+      {webgl ? (
+        <canvas ref={canvasRef} className={styles.canvas} aria-hidden="true" />
+      ) : (
+        <img
+          className={styles.poster}
+          src="./media/hero-array.webp"
+          width={1600}
+          height={1100}
+          alt="A 4×4 antenna array with its beam pattern rising above it as a blue sculpture, notched toward an interferer on the horizon."
+        />
+      )}
+      {webgl ? (
+        <div className={styles.labels} aria-hidden="true">
+          <span ref={satLabel} className={`${styles.tag} ${styles.tagSat}`}>
+            SAT <em>desired signal</em>
+          </span>
+          <span ref={jamLabel} className={`${styles.tag} ${styles.tagJam}`}>
+            JAM <em>interferer</em>
+          </span>
         </div>
+      ) : null}
 
-        <div className={styles.copy}>
-          <p className={`label ${styles.role}`}>
-            {profile.role} — {profile.disciplines.join(' · ')}
-          </p>
-          <h1 id="hero-title" className={`display ${styles.name}`}>
-            <span className={styles.line}>
-              <span>Somashekar</span>
-            </span>
-            <span className={styles.line}>
-              <span>
-                Reddy Nakka<span className={styles.dot}>.</span>
-              </span>
-            </span>
-          </h1>
-          <div className={styles.side}>
-            <p className={styles.statement}>{profile.heroStatement}</p>
-            <div className={styles.ctas}>
-              <a className="btn" href="#work">
-                <span className="dot" aria-hidden="true" /> Explore projects
-              </a>
-              <a className="btn btn--ghost" href={profile.resume.href} download>
-                Résumé · PDF
-              </a>
-            </div>
-          </div>
+      <div className={styles.intro}>
+        <p className={`label ${styles.role}`}>
+          {profile.role}
+          <br />
+          {profile.disciplines.join(' · ')}
+        </p>
+        <p className={styles.statement}>
+          Intelligent systems, <span className="serif">from the signal</span> to the field.
+        </p>
+        <p className={styles.sub}>{profile.heroStatement}</p>
+        <div className={styles.ctas}>
+          <a className="btn" href="#work">
+            <span className="dot" aria-hidden="true" /> See the work
+          </a>
+          <a className="btn btn--ghost" href="#lab">
+            Try the beam lab
+          </a>
         </div>
       </div>
 
-      <div className={`reg-row container ${styles.reg}`} aria-hidden="true">
-        <span>+</span>
-        <span className={styles.regHideSm}>GPS L1 · 1575.42 MHz</span>
-        <span>+</span>
-        <span className={styles.scrollCue}>Scroll to explore</span>
-        <span>+</span>
-        <span className={styles.regHideSm}>λ/2 = {halfLambdaCm} cm</span>
-        <span>+</span>
+      <figure className={styles.fig}>
+        <figcaption>
+          <span className="annot">
+            fig. 01 — 4×4 planar array, λ/2 = {halfLambdaCm} cm at GPS L1. Beam pattern computed live: MVDR, steered to the satellite.
+          </span>
+          {webgl ? (
+            <span className={styles.readout}>
+              <span>
+                Toward interferer <strong ref={nullOut}>— dB</strong>
+              </span>
+              <span>
+                Azimuth <strong ref={azOut}>—</strong>
+              </span>
+            </span>
+          ) : null}
+          {webgl && pointer ? <span className={`annot ${styles.hint}`}>Move the pointer — the null follows the interferer.</span> : null}
+          <button type="button" className={styles.aboutBtn} aria-expanded={aboutOpen} aria-controls="hero-visual-note" onClick={() => setAboutOpen((v) => !v)}>
+            {aboutOpen ? 'Hide note' : 'About this visual'}
+          </button>
+        </figcaption>
+        <p id="hero-visual-note" className={styles.note} hidden={!aboutOpen}>
+          Illustrative, not an electromagnetic simulation of real hardware. The sculpture is the array’s power pattern over the sky (radius ∝ gain over a 32 dB range), computed in your
+          browser for 16 isotropic elements spaced λ/2. It opens as the conventional delay-and-sum beam and re-forms as the MVDR beam once a 40 dB interferer appears near the
+          horizon. Ideal-model nulls are far deeper than real hardware achieves, so anything below −60 dB is shown as “&lt; −60 dB”.
+        </p>
+      </figure>
+
+      <h1 id="hero-title" className={`display ${styles.name}`}>
+        <span className={styles.line1}>Somashekar</span>
+        <span className={styles.line2}>
+          Reddy Nakka<span className={styles.dot}>.</span>
+        </span>
+      </h1>
+
+      <div className={styles.foot} aria-hidden="true">
+        <span>GPS L1 · 1575.42 MHz</span>
+        <span className={styles.scrollCue}>Scroll — follow the signal</span>
+        <span>{profile.location}</span>
       </div>
     </section>
   )

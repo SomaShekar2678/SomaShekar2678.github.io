@@ -127,9 +127,10 @@ export function NavicGlobe() {
       >
         <defs>
           <radialGradient id="globe-fill" cx="35%" cy="30%" r="80%">
-            <stop offset="0%" stopColor="#1a2140" />
-            <stop offset="60%" stopColor="#0c0f1a" />
-            <stop offset="100%" stopColor="#07080a" />
+            {/* Shading only (white highlight → dark limb), so the globe sits on whatever chapter colour it is placed on. */}
+            <stop offset="0%" stopColor="#fff" stopOpacity="0.16" />
+            <stop offset="60%" stopColor="#000" stopOpacity="0.08" />
+            <stop offset="100%" stopColor="#000" stopOpacity="0.32" />
           </radialGradient>
         </defs>
         <path d={geometry.geoRing} className={styles.geoRingBack} />

@@ -1,6 +1,8 @@
 /* ─── Immersive (desktop + WebGL) ─── */
 .journey {
   position: relative;
+  /* The section itself is paper until the aperture has fully opened. */
+  background: var(--paper) !important;
 }
 .stage {
   position: sticky;
@@ -163,6 +165,9 @@
 .panelsHead h2 {
   font-size: var(--fs-h2);
 }
+.panels {
+  padding-bottom: calc(var(--section-pad) + var(--r-xl));
+}
 .grid {
   margin: 0;
   display: grid;
@@ -230,8 +235,24 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
+/* Phones: the six stages become a swipeable strip (scroll-snap), not a long column of cards. */
 @media (max-width: 600px) {
   .grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: none;
+    grid-auto-flow: column;
+    grid-auto-columns: 84%;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    overscroll-behavior-x: contain;
+    margin-inline: calc(var(--gutter) * -1);
+    padding-inline: var(--gutter);
+    scroll-padding-inline: var(--gutter);
+    scrollbar-width: none;
+  }
+  .grid::-webkit-scrollbar {
+    display: none;
+  }
+  .panel {
+    scroll-snap-align: start;
   }
 }

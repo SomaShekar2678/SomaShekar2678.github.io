@@ -32,7 +32,7 @@ export const profile = {
 
 export const about = {
   statement:
-    'Most of my work sits where software intelligence meets physical engineering: antenna arrays that must hear satellites through jamming, cameras that must localise a platform when GNSS is unavailable, and engines whose health must be read from noisy telemetry.',
+    'Most of my work sits where software intelligence meets physical engineering: *antenna arrays that must hear satellites through jamming,* *cameras that must localise a platform when GNSS is unavailable,* and *engines whose health must be read from noisy telemetry.*',
   paragraphs: [
     'I trained in Electronics and Communication Engineering at NIT Delhi, then began my career in software engineering at Accenture, building production document-intelligence services and healthcare classification models.',
     'At TAVAS Industries I moved closer to the hardware. I designed the software architecture for a multi-antenna GNSS anti-jamming system, implemented array-processing algorithms and took them from Python simulation onto Xilinx RFSoC — while also building visual localization, sensor-fusion and prognostics pipelines.',
