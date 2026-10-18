@@ -1,0 +1,58 @@
+.cursor {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: var(--z-cursor);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--t-med);
+}
+.cursor[data-visible='true'] {
+  opacity: 1;
+}
+.ring {
+  position: absolute;
+  left: -14px;
+  top: -14px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid rgb(238 235 228 / 0.55);
+  transition:
+    transform 380ms var(--ease-out),
+    background-color 380ms var(--ease-out),
+    border-color 380ms var(--ease-out);
+}
+.cursor[data-state='hover'] .ring {
+  transform: scale(1.6);
+  border-color: var(--c-signal-bright);
+  background: rgb(91 124 255 / 0.08);
+}
+.cursor[data-state='label'] .ring {
+  transform: scale(3.2);
+  border-color: transparent;
+  background: var(--c-signal-fill);
+}
+.label {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform: translate(-50%, -50%);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #fff;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 200ms;
+}
+.cursor[data-state='label'] .label {
+  opacity: 1;
+}
+@media (hover: none), (pointer: coarse) {
+  .cursor {
+    display: none;
+  }
+}

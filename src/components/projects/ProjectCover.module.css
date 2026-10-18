@@ -1,0 +1,106 @@
+.cover {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border-radius: var(--r-lg);
+  background:
+    radial-gradient(80% 90% at 70% 20%, rgb(91 124 255 / 0.14), transparent 60%),
+    linear-gradient(160deg, var(--c-surface), var(--c-bg));
+  box-shadow: inset 0 0 0 1px var(--c-line);
+  color: var(--c-text-2);
+  isolation: isolate;
+}
+.large {
+  aspect-ratio: 21 / 9;
+}
+.grid {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-image:
+    linear-gradient(var(--c-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--c-line) 1px, transparent 1px);
+  background-size: 32px 32px;
+  mask-image: radial-gradient(70% 70% at 50% 50%, #000, transparent);
+  opacity: 0.7;
+}
+.svg {
+  width: 88%;
+  height: 88%;
+  transition: transform 1.2s var(--ease-out);
+}
+.svgSquare {
+  height: 88%;
+  width: auto;
+  transition: transform 1.2s var(--ease-out);
+}
+.axis {
+  stroke: var(--c-text);
+  stroke-opacity: 0.2;
+}
+.signal {
+  fill: none;
+  stroke: var(--c-signal-bright);
+  stroke-width: 1.6;
+  stroke-linejoin: round;
+}
+.truth {
+  fill: none;
+  stroke: var(--c-text);
+  stroke-opacity: 0.4;
+  stroke-width: 1.2;
+  stroke-dasharray: 4 4;
+}
+.cov {
+  fill: var(--c-signal-dim);
+  stroke: var(--c-signal);
+  stroke-opacity: 0.4;
+}
+.band {
+  fill: var(--c-signal-dim);
+}
+.frame {
+  fill: rgb(255 255 255 / 0.02);
+  stroke: var(--c-line-strong);
+}
+.inlier {
+  stroke: var(--c-signal-bright);
+  stroke-opacity: 0.55;
+  stroke-width: 0.9;
+}
+.outlier {
+  stroke: var(--c-interf);
+  stroke-opacity: 0.45;
+  stroke-width: 0.8;
+  stroke-dasharray: 2 3;
+}
+.dot {
+  fill: var(--c-text);
+  opacity: 0.55;
+}
+.hot {
+  fill: var(--c-signal-bright);
+}
+.query {
+  fill: var(--c-verified);
+}
+.cell {
+  fill: var(--c-signal);
+}
+.known {
+  fill: var(--c-text);
+}
+.mono,
+.monoMuted {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+}
+.mono {
+  fill: var(--c-text);
+}
+.monoMuted {
+  fill: var(--c-text-3);
+}

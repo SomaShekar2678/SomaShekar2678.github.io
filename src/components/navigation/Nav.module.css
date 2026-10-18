@@ -1,0 +1,98 @@
+.nav {
+  position: fixed;
+  inset: 0 0 auto 0;
+  z-index: var(--z-nav);
+  height: var(--nav-h);
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 1rem;
+  padding-inline: var(--gutter);
+  transition: background-color var(--t-med) var(--ease-out), box-shadow var(--t-med) var(--ease-out);
+}
+.scrolled {
+  background: rgb(7 8 10 / 0.72);
+  backdrop-filter: blur(14px) saturate(1.2);
+  -webkit-backdrop-filter: blur(14px) saturate(1.2);
+  box-shadow: 0 1px 0 var(--c-line);
+}
+.mark {
+  justify-self: start;
+  display: grid;
+  line-height: 1.1;
+  text-decoration: none;
+  padding: 4px 0;
+}
+.markName {
+  font-family: var(--font-display);
+  font-weight: 650;
+  font-size: 1.05rem;
+  letter-spacing: -0.02em;
+}
+.markRole {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--c-text-3);
+}
+.where {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-family: var(--font-mono);
+  font-size: var(--fs-label);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--c-text-2);
+  overflow: hidden;
+}
+.whereDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--c-signal);
+  box-shadow: 0 0 0 4px var(--c-signal-dim);
+}
+.whereText {
+  display: inline-block;
+  animation: whereIn 600ms var(--ease-out);
+}
+@keyframes whereIn {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+}
+.actions {
+  justify-self: end;
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+}
+.menuBtn {
+  gap: 0.6rem;
+}
+.dots {
+  display: inline-flex;
+  gap: 3px;
+}
+.dots i {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: currentColor;
+}
+@media (max-width: 900px) {
+  .hideSm {
+    display: none;
+  }
+}
+@media (max-width: 620px) {
+  .nav {
+    grid-template-columns: 1fr auto;
+  }
+  .where {
+    display: none;
+  }
+}

@@ -1,0 +1,13 @@
+.wrap {
+  min-height: 100svh;
+  display: grid;
+  align-content: center;
+  justify-items: start;
+  gap: 1.5rem;
+  padding: calc(var(--nav-h) + 2rem) var(--gutter) 4rem;
+  max-width: var(--max-w);
+  margin-inline: auto;
+}
+.wrap h1 {
+  font-size: var(--fs-display);
+}

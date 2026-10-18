@@ -1,0 +1,81 @@
+.contact {
+  padding-bottom: clamp(4rem, 3rem + 5vw, 8rem);
+}
+.title {
+  margin-top: 1.5rem;
+  font-size: clamp(2.6rem, 1rem + 6.4vw, 8.5rem);
+  max-width: 14ch;
+}
+.lead {
+  margin-top: 2rem;
+  max-width: 52ch;
+}
+.mailRow {
+  margin-top: clamp(2.5rem, 4vw, 4rem);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem 1.5rem;
+  padding-block: 1.5rem;
+  border-top: var(--border-strong);
+  border-bottom: var(--border-strong);
+}
+.mail {
+  font-family: var(--font-display);
+  font-weight: 520;
+  font-size: clamp(1.4rem, 0.8rem + 3vw, 3.6rem);
+  letter-spacing: -0.03em;
+  text-decoration: none;
+  overflow-wrap: anywhere;
+  background: linear-gradient(currentColor, currentColor) 0 100% / 0 1px no-repeat;
+  transition: background-size var(--t-slow) var(--ease-out), color var(--t-med);
+}
+.mail:hover,
+.mail:focus-visible {
+  color: var(--c-signal-bright);
+  background-size: 100% 1px;
+}
+.links {
+  margin: 2rem 0 0;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1rem;
+}
+.card {
+  height: 100%;
+  display: grid;
+  gap: 0.4rem;
+  padding: 1.25rem;
+  border: var(--border);
+  border-radius: var(--r-md);
+  text-decoration: none;
+  background: var(--c-bg-elev);
+  transition: border-color var(--t-med), transform var(--t-med) var(--ease-out), background var(--t-med);
+}
+.card:hover,
+.card:focus-visible {
+  border-color: var(--c-signal);
+  background: var(--c-surface);
+  transform: translateY(-3px);
+}
+.cardTitle {
+  font-family: var(--font-display);
+  font-size: var(--fs-h4);
+  font-weight: 560;
+  letter-spacing: -0.02em;
+}
+.cardMeta {
+  font-size: var(--fs-sm);
+  color: var(--c-text-3);
+  overflow-wrap: anywhere;
+}
+@media (max-width: 900px) {
+  .links {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 480px) {
+  .links {
+    grid-template-columns: 1fr;
+  }
+}

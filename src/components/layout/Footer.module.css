@@ -1,0 +1,42 @@
+.footer {
+  border-top: var(--border);
+  padding-block: 2rem calc(2rem + env(safe-area-inset-bottom));
+  font-size: var(--fs-sm);
+  color: var(--c-text-2);
+}
+.grid {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 1rem 2rem;
+  align-items: center;
+}
+.copy {
+  font-family: var(--font-mono);
+  font-size: var(--fs-label);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.note {
+  color: var(--c-text-3);
+  max-width: 52ch;
+}
+.links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1.25rem;
+  margin: 0;
+}
+.links a {
+  display: inline-flex;
+  min-height: 36px;
+  align-items: center;
+  text-decoration: none;
+}
+.links a:hover {
+  color: var(--c-text);
+}
+@media (max-width: 900px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}

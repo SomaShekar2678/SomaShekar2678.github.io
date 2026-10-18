@@ -1,0 +1,37 @@
+.rail {
+  position: fixed;
+  right: max(10px, calc(var(--gutter) / 2 - 4px));
+  top: 50%;
+  z-index: var(--z-rail);
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+.track {
+  position: relative;
+  width: 2px;
+  height: 120px;
+  border-radius: 2px;
+  background: var(--c-line);
+  overflow: hidden;
+}
+.fill {
+  position: absolute;
+  inset: 0;
+  background: var(--c-text);
+  transform-origin: top;
+  transform: scaleY(0);
+}
+.count {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  color: var(--c-text-3);
+}
+@media (max-width: 900px) {
+  .rail {
+    display: none;
+  }
+}

@@ -1,0 +1,9 @@
+node_modules
+dist
+.tmp
+test-results
+playwright-report
+*.local
+.env*
+# Raw source material (handwritten notes, tailored CVs) stays private
+inputs/

@@ -1,0 +1,12 @@
+{
+  "name": "Somashekar Reddy Nakka — Portfolio",
+  "short_name": "S.R. Nakka",
+  "icons": [
+    { "src": "./icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "./icons/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ],
+  "background_color": "#07080a",
+  "theme_color": "#07080a",
+  "display": "standalone",
+  "start_url": "./"
+}

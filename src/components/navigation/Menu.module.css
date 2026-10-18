@@ -1,0 +1,110 @@
+.menu {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  max-width: none;
+  height: 100%;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: var(--c-bg);
+  color: var(--c-text);
+  overflow-y: auto;
+}
+.menu::backdrop {
+  background: rgb(0 0 0 / 0.6);
+}
+.menu[open] {
+  animation: menuIn 700ms var(--ease-out);
+}
+@keyframes menuIn {
+  from {
+    clip-path: inset(0 0 100% 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+.inner {
+  min-height: 100%;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: 2rem;
+  padding: 16px var(--gutter) clamp(24px, 4vw, 48px);
+}
+.head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  min-height: calc(var(--nav-h) - 16px);
+}
+.list {
+  display: grid;
+  align-content: center;
+  margin: 0;
+}
+.list li {
+  border-top: var(--border);
+}
+.list li:last-child {
+  border-bottom: var(--border);
+}
+.list a {
+  display: flex;
+  align-items: baseline;
+  gap: clamp(1rem, 3vw, 3rem);
+  padding-block: clamp(0.4rem, 1.2vh, 0.9rem);
+  text-decoration: none;
+  transition: color var(--t-med), padding var(--t-med) var(--ease-out);
+}
+.menu[open] .list li {
+  animation: itemIn 900ms var(--ease-out) both;
+  animation-delay: calc(120ms + var(--i) * 45ms);
+}
+@keyframes itemIn {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+}
+.list a:hover,
+.list a:focus-visible {
+  color: var(--c-signal-bright);
+  padding-left: 0.75rem;
+}
+.list a[aria-current] .title::after {
+  content: ' ●';
+  font-size: 0.3em;
+  vertical-align: middle;
+  color: var(--c-signal);
+}
+.index {
+  font-family: var(--font-mono);
+  font-size: var(--fs-label);
+  color: var(--c-text-3);
+  min-width: 2.5ch;
+}
+.title {
+  font-family: var(--font-display);
+  font-weight: 560;
+  letter-spacing: var(--tracking-display);
+  font-size: clamp(2rem, 1rem + 4.5vw, 5rem);
+  line-height: 1;
+}
+.foot {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 2rem;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--c-text-2);
+}
+.foot a {
+  min-height: 32px;
+  display: inline-flex;
+  align-items: center;
+}
+.foot a:hover {
+  color: var(--c-text);
+}

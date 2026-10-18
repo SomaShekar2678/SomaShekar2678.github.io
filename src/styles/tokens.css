@@ -1,0 +1,110 @@
+/*
+ * Design tokens — The Engineering Frontier.
+ *
+ * Colour carries meaning across the whole site and is always paired with a text label:
+ *   signal   (blue)  — the desired signal / intelligence / primary action
+ *   interf   (amber) — interference, jammers, risk
+ *   verified (lime)  — evidence that is documented / measured
+ */
+:root {
+  /* Surfaces */
+  --c-bg: #07080a;
+  --c-bg-elev: #0c0e12;
+  --c-surface: #111419;
+  --c-surface-2: #171b22;
+  --c-line: rgb(238 235 228 / 0.09);
+  --c-line-strong: rgb(238 235 228 / 0.2);
+
+  /* Text */
+  --c-text: #eeebe4;
+  --c-text-2: #a7adb8;
+  --c-text-3: #808897;
+  --c-text-inverse: #07080a;
+
+  /* Meaningful accents */
+  --c-signal: #5b7cff;
+  --c-signal-bright: #94a8ff;
+  /* Fill behind white text: 5.4:1 with #fff (WCAG AA). --c-signal itself is for marks and text on dark. */
+  --c-signal-fill: #3f5ce6;
+  /* Blue text on light (warm-white) surfaces: 6.3:1 on #eeebe4. */
+  --c-signal-ink: #2f47c4;
+  --c-signal-dim: rgb(91 124 255 / 0.16);
+  --c-interf: #ffb23f;
+  --c-interf-dim: rgb(255 178 63 / 0.16);
+  --c-verified: #c8f25a;
+  --c-verified-dim: rgb(200 242 90 / 0.14);
+
+  /* Typography */
+  --font-display: 'Bricolage Grotesque Variable', 'Inter Variable', system-ui, sans-serif;
+  --font-sans: 'Inter Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono Variable', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  --font-serif: 'Instrument Serif', Georgia, serif;
+
+  --fs-label: 0.6875rem;
+  --fs-sm: 0.875rem;
+  --fs-base: 1.0625rem;
+  --fs-lead: clamp(1.125rem, 1rem + 0.45vw, 1.4rem);
+  --fs-h4: clamp(1.15rem, 1.05rem + 0.4vw, 1.35rem);
+  --fs-h3: clamp(1.45rem, 1.15rem + 1.1vw, 2.1rem);
+  --fs-h2: clamp(2.4rem, 1.2rem + 4.6vw, 6rem);
+  --fs-display: clamp(3.1rem, 0.9rem + 8.6vw, 11rem);
+
+  --lh-tight: 0.92;
+  --lh-snug: 1.12;
+  --lh-body: 1.6;
+  --tracking-display: -0.045em;
+  --tracking-label: 0.14em;
+
+  /* Spacing (4px base) */
+  --s-1: 0.25rem;
+  --s-2: 0.5rem;
+  --s-3: 0.75rem;
+  --s-4: 1rem;
+  --s-5: 1.5rem;
+  --s-6: 2rem;
+  --s-7: 3rem;
+  --s-8: 4rem;
+  --s-9: 6rem;
+  --s-10: 8rem;
+  --s-11: 12rem;
+  --gutter: clamp(16px, 4vw, 56px);
+  --section-pad: clamp(4.5rem, 2.5rem + 6vw, 9rem);
+  --max-w: 1600px;
+  --nav-h: 72px;
+
+  /* Shape */
+  --r-xs: 4px;
+  --r-sm: 8px;
+  --r-md: 14px;
+  --r-lg: 22px;
+  --r-xl: 32px;
+  --r-pill: 999px;
+  --border: 1px solid var(--c-line);
+  --border-strong: 1px solid var(--c-line-strong);
+  --shadow-lift: 0 30px 80px -30px rgb(0 0 0 / 0.65), 0 0 0 1px var(--c-line);
+
+  /* Motion */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-spring: cubic-bezier(0.34, 1.4, 0.64, 1);
+  --t-fast: 160ms;
+  --t-med: 320ms;
+  --t-slow: 700ms;
+  --t-xslow: 1200ms;
+
+  /* Layers */
+  --z-canvas: 0;
+  --z-content: 1;
+  --z-rail: 40;
+  --z-nav: 50;
+  --z-menu: 60;
+  --z-cursor: 80;
+  --z-loader: 90;
+  --z-skip: 100;
+}
+
+@media (max-width: 620px) {
+  :root {
+    --nav-h: 64px;
+  }
+}

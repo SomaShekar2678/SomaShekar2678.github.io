@@ -1,0 +1,120 @@
+.india {
+  overflow: clip;
+  border-top: var(--border);
+  border-bottom: var(--border);
+  background: linear-gradient(180deg, var(--c-bg), #090b12 50%, var(--c-bg));
+}
+.glow {
+  position: absolute;
+  inset: 10% -20% auto auto;
+  width: 70vw;
+  height: 70vw;
+  max-width: 1100px;
+  max-height: 1100px;
+  background: radial-gradient(closest-side, rgb(91 124 255 / 0.12), transparent);
+  pointer-events: none;
+}
+.top {
+  display: grid;
+  grid-template-columns: minmax(0, 6fr) minmax(0, 6fr);
+  gap: 2rem clamp(2rem, 4vw, 4rem);
+  align-items: center;
+  margin-top: 1.5rem;
+}
+.copy {
+  display: grid;
+  gap: 2rem;
+}
+.title {
+  font-size: clamp(2.6rem, 1.2rem + 5vw, 6.6rem);
+}
+.intro {
+  max-width: 52ch;
+  color: var(--c-text);
+}
+.figure {
+  margin: 0;
+  display: grid;
+  gap: 1rem;
+}
+.caption {
+  font-size: 0.78rem;
+  line-height: 1.5;
+  color: var(--c-text-3);
+  max-width: 52ch;
+}
+.areas {
+  margin: clamp(4rem, 3rem + 4vw, 7rem) 0 0;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  border-top: var(--border);
+}
+.area {
+  display: grid;
+  align-content: start;
+  gap: 0.6rem;
+  padding: 1.5rem 1.25rem 2rem 0;
+  border-bottom: var(--border);
+}
+.area:not(:nth-child(4n)) {
+  border-right: var(--border);
+}
+.area:not(:nth-child(4n + 1)) {
+  padding-left: 1.25rem;
+}
+.areaIndex {
+  font-family: var(--font-mono);
+  font-size: var(--fs-label);
+  color: var(--c-signal-bright);
+}
+.areaTitle {
+  font-family: var(--font-display);
+  font-size: var(--fs-h4);
+  font-weight: 560;
+  letter-spacing: -0.02em;
+}
+.area p {
+  font-size: var(--fs-sm);
+  color: var(--c-text-2);
+}
+.link {
+  font-family: var(--font-mono);
+  font-size: 0.7rem !important;
+  letter-spacing: 0.06em;
+  color: var(--c-text-3) !important;
+}
+.disclaimer {
+  margin-top: 1.5rem;
+  font-size: var(--fs-sm);
+  color: var(--c-text-3);
+}
+@media (max-width: 1000px) {
+  .top {
+    grid-template-columns: 1fr;
+  }
+  .figure {
+    max-width: 520px;
+  }
+  .areas {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .area:nth-child(n) {
+    border-right: 0;
+    padding-left: 0;
+  }
+  .area:nth-child(odd) {
+    border-right: var(--border);
+  }
+  .area:nth-child(even) {
+    padding-left: 1.25rem;
+  }
+}
+@media (max-width: 560px) {
+  .areas {
+    grid-template-columns: 1fr;
+  }
+  .area:nth-child(n) {
+    border-right: 0;
+    padding-left: 0;
+  }
+}
