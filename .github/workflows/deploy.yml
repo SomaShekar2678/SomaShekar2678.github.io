@@ -27,9 +27,12 @@ jobs:
       - run: npm run typecheck
       - run: npm run lint
       - run: npm test
+      - id: pages
+        uses: actions/configure-pages@v5
       - name: Build
-        # Canonical URL, sitemap and absolute OG image URL for the Pages address.
-        run: SITE_URL="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}" npm run build
+        # Canonical URL, sitemap and absolute OG image URL for the real Pages address
+        # (works for user sites <owner>.github.io and project sites <owner>.github.io/<repo>).
+        run: SITE_URL="${{ steps.pages.outputs.base_url }}" npm run build
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist

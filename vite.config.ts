@@ -1,7 +1,7 @@
 /// <reference types="vitest/config" />
 import { defineConfig, type Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
-import { copyFileSync, writeFileSync } from 'node:fs'
+import { readFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -31,7 +31,10 @@ function siteMeta(): Plugin {
       const out = resolve(ROOT, 'dist')
       // Static hosts (GitHub Pages, Netlify, etc.) serve 404.html for unknown paths.
       // It is self-contained (no relative assets) so it renders correctly at any depth.
-      copyFileSync(resolve(ROOT, 'scripts/404.html'), resolve(out, '404.html'))
+      // The "return home" link points at the site root when it is known.
+      const home = SITE_URL ? new URL(`${SITE_URL}/`).pathname : null
+      const notFound = readFileSync(resolve(ROOT, 'scripts/404.html'), 'utf8')
+      writeFileSync(resolve(out, '404.html'), home ? notFound.replace('href="/"', `href="${home}"`).replace('<script>', '<script data-base-known>') : notFound)
       const robots = SITE_URL
         ? `User-agent: *\nAllow: /\n\nSitemap: ${SITE_URL}/sitemap.xml\n`
         : 'User-agent: *\nAllow: /\n'

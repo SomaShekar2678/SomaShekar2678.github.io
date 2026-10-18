@@ -24,8 +24,8 @@
   <a id="home" href="/">Return to the portfolio</a>
 </main>
 <script>
-  // On GitHub Pages project sites the app lives under /<repo>/.
-  if (location.hostname.endsWith('github.io')) {
+  // Fallback when the build did not know its URL: on GitHub Pages project sites the app lives under /<repo>/.
+  if (!document.currentScript.hasAttribute('data-base-known') && location.hostname.endsWith('github.io')) {
     var seg = location.pathname.split('/').filter(Boolean)[0];
     if (seg) document.getElementById('home').setAttribute('href', '/' + seg + '/');
   }
