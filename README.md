@@ -1,5 +1,7 @@
 # Somashekar Reddy Nakka — The Engineering Frontier
 
+**Live:** https://somashekar2678.github.io/
+
 Portfolio of an AI/ML engineer working across GNSS anti-jamming, array signal processing, FPGA acceleration, perception and prognostics. A single-page React app with a real-time Three.js hero, an interactive beamforming lab, and evidence-backed case studies.
 
 Every visual that shows numbers is computed from a stated mathematical model in the browser (steering vectors, MVDR/LCMV weights, MUSIC, GPS C/A Gold codes) and is labelled illustrative.
@@ -26,6 +28,8 @@ npm run check       # typecheck + lint + unit tests + build
 ```
 
 End-to-end tests use the installed Google Chrome (`channel: 'chrome'`). To use Playwright's own Chromium instead: `npx playwright install chromium` and run with `PW_CHANNEL=''`.
+
+To test the deployed site instead of the local build: `BASE_URL=https://somashekar2678.github.io npm run test:e2e`.
 
 They run **one browser at a time** (`workers: 1`) on purpose. Each test renders WebGL in software, and parallel runs exhausted RAM on an 8 GB laptop.
 
@@ -66,7 +70,7 @@ docs/             decisions, content checklist, test report
 
 The build is fully static and uses relative asset paths and hash routes (`#/work/<slug>`). It works on any static host and under any sub-path, with no rewrite rules.
 
-**GitHub Pages:** push to `main`. `.github/workflows/deploy.yml` tests, builds and publishes. In the repository settings, set *Pages → Source* to *GitHub Actions*.
+**GitHub Pages (current):** the repository is `SomaShekar2678/SomaShekar2678.github.io`, a user site served at the domain root. Every push to `main` runs `.github/workflows/deploy.yml`: type-check, lint, unit tests, build with the real Pages URL as `SITE_URL`, then publish. *Pages → Source* is set to *GitHub Actions*.
 
 **Netlify / Vercel / Cloudflare Pages:** build command `npm run build`, output directory `dist`.
 

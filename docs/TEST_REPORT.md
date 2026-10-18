@@ -13,7 +13,17 @@ Environment: Ubuntu Linux (6.8 kernel), Node 24.22.0 LTS, Google Chrome (system 
 | E2E — desktop 1440×900 | `npx playwright test --project=desktop` | ✅ 22 / 22 passed |
 | E2E — mobile (Pixel 7 emulation) | `npx playwright test --project=mobile` | ✅ 20 passed, 2 skipped (keyboard-only tests, by design) |
 
-### What the unit tests cover
+#### Against the live deployment (https://somashekar2678.github.io/)
+
+| Check | Result |
+|---|---|
+| GitHub Actions deploy run (type-check, lint, unit tests, build, publish) | ✅ success |
+| HTTP checks: `/`, OG image, résumé PDF, robots, sitemap, icons, certificate images | ✅ 200 with correct content types; unknown path → 404 page |
+| Built bundle served (not raw source); canonical URL present | ✅ |
+| `BASE_URL=… npx playwright test --project=desktop` | ✅ 22 / 22 passed |
+| `BASE_URL=… npx playwright test --project=mobile` | ✅ 20 passed, 2 skipped |
+
+## What the unit tests cover
 
 - **Array maths** (`beamforming.test.ts`, 12 tests): unit-modulus steering vectors; the linear solver round-trips; MVDR is distortionless (wᴴa = 1); MVDR null < −35 dB at a 40 dB jammer; LCMV gives an exact zero; MVDR beats the conventional beam's SINR by > 20 dB; the M − 1 degrees-of-freedom limit; MUSIC locates the jammer to within 6°.
 - **GPS C/A codes** (3): PRN 1 first chips = octal 1440; autocorrelation takes only {1023, −1, −65, 63}; cross-correlation is bounded.
