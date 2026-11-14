@@ -95,3 +95,13 @@ Without `SITE_URL`, no canonical URL or sitemap is generated, so a guessed domai
 - No WebGL, or a lost context: the hero shows a static, computed SVG beam pattern. The lab keeps its 2D sky maps and hides the 3D tab. Test with `?webgl=0`.
 - `prefers-reduced-motion`: no smooth scrolling, reveals or scroll-scrubbing, and the 3D scene renders only on interaction. Test with `?motion=0`.
 - Without JavaScript, a `<noscript>` summary with contact links is shown.
+
+### Journey visual assets
+
+The six-world animation uses original representative models and local CC BY 4.0 Earth textures. Sources and modifications are linked from the footer's **Visual credits** page. Camera paths, narrative and scroll timing are preserved; phone/reduced-motion panels use lightweight renders of the same scenes.
+
+```bash
+npm run journey:posters   # regenerate six WebP posters; one headless Chrome instance
+```
+
+The preservation contract, modelling assumptions, measured rendering budgets and before/after comparisons are in [docs/JOURNEY_REALISM.md](docs/JOURNEY_REALISM.md).

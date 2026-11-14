@@ -28,6 +28,9 @@ export function Footer() {
             </a>
           </li>
           <li>
+            <a href={`${import.meta.env.BASE_URL}visual-credits.html`}>Visual credits</a>
+          </li>
+          <li>
             <a href="#top">Back to top ↑</a>
           </li>
         </ul>

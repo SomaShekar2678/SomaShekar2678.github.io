@@ -258,6 +258,10 @@ test.describe('signal journey', () => {
       await expect(title(i)).toHaveAttribute('data-active', { timeout: 5000 })
     }
     const frames = () => page.evaluate(() => (window as unknown as { __journeyFrames: number }).__journeyFrames)
+    // Captions follow target scroll immediately; allow the preserved eased camera flight and
+    // first-use shader compilation to finish before measuring stationary rendering progress.
+    await expect(section.locator('canvas')).toHaveAttribute('data-render-stage', '5', { timeout: 10_000 })
+    await expect(section.locator('canvas')).toHaveAttribute('data-assets', 'ready')
     const before = await frames()
     await page.waitForTimeout(1000)
     expect(await frames()).toBeGreaterThan(before + 5)
@@ -275,5 +279,58 @@ test.describe('signal journey', () => {
     await expect(section.locator('canvas')).toHaveCount(0)
     await expect(section.locator('ol[role="list"] > li')).toHaveCount(6)
     await expect(section.getByRole('heading', { level: 3, name: 'The array adapts' })).toBeAttached()
+  })
+})
+
+test.describe('journey asset resilience', () => {
+  test('texture failure preserves the full story as illustrated panels', async ({ page }, info) => {
+    test.skip(info.project.name === 'mobile', 'phones do not request Earth textures')
+    await page.route('**/textures/journey/earth-day.webp', route => route.abort())
+    await ready(page)
+    const section = page.locator('#journey')
+    await section.scrollIntoViewIfNeeded()
+    await expect(section.locator('canvas')).toHaveCount(0, { timeout: 10_000 })
+    await expect(section.locator('ol[role="list"] > li')).toHaveCount(6)
+    const first = section.locator('img').first()
+    await first.scrollIntoViewIfNeeded()
+    await expect(first).toHaveJSProperty('naturalWidth', 960)
+  })
+
+  test('context loss releases the scene and leaves navigation available', async ({ page }, info) => {
+    test.skip(info.project.name === 'mobile', 'phones have no journey WebGL context')
+    await ready(page)
+    const section = page.locator('#journey')
+    const canvas = section.locator('canvas')
+    await expect(canvas).toHaveAttribute('data-assets', 'ready', { timeout: 15_000 })
+    await canvas.evaluate(el => el.dispatchEvent(new Event('webglcontextlost', { cancelable: true })))
+    await expect(canvas).toHaveCount(0)
+    await expect(section.locator('ol[role="list"] > li')).toHaveCount(6)
+    await page.getByRole('link', { name: 'Work', exact: true }).first().click()
+    await expect(page.locator('#work-title')).toBeInViewport()
+  })
+
+  test('reduced motion loads posters without the 3D texture pack', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' })
+    const textures: string[] = []
+    page.on('request', r => { if (r.url().includes('/textures/journey/')) textures.push(r.url()) })
+    await ready(page)
+    const section = page.locator('#journey')
+    await section.scrollIntoViewIfNeeded()
+    await expect(section.locator('canvas')).toHaveCount(0)
+    await expect(section.locator('img')).toHaveCount(6)
+    const first = section.locator('img').first()
+    await first.scrollIntoViewIfNeeded()
+    await expect(first).toHaveJSProperty('naturalWidth', 960)
+    expect(textures).toEqual([])
+  })
+
+  test('visual credits and license details are served locally', async ({ page }) => {
+    await page.goto('/visual-credits.html')
+    await expect(page.getByRole('heading', { name: 'Visual credits.' })).toBeVisible()
+    await expect(page.getByRole('link', { name: 'Solar System Scope' })).toHaveAttribute('href', 'https://www.solarsystemscope.com/textures/')
+    await expect(page.getByRole('link', { name: 'Creative Commons Attribution 4.0 International' })).toHaveAttribute('href', 'https://creativecommons.org/licenses/by/4.0/')
+    const source = await page.request.get('/textures/journey/ATTRIBUTION.md')
+    expect(source.ok()).toBe(true)
+    expect(await source.text()).toContain('clouds resized to 1024×512')
   })
 })

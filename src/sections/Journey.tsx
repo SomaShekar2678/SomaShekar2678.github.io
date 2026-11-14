@@ -183,7 +183,24 @@ function JourneyImmersive({ onFail }: { onFail: () => void }) {
   )
 }
 
+const sceneDescriptions = {
+  space: 'Illustrative navigation spacecraft above textured Earth, with scientific radio wave overlays',
+  interference: 'Synthetic spectrum surface with a weak desired signal and stronger interference peaks',
+  array: 'Representative ceramic patch array and a response calculated from MVDR weights',
+  fpga: 'Illustrative processing board linking I/Q, covariance, weights and beamforming stages',
+  perception: 'Synthetic LiDAR street scan with scan rings, facades and an estimated trajectory',
+  fix: 'Illustrative satellite observations converging on a location in India, not a measured position',
+} as const
+
 function StageArt({ id }: { id: (typeof journey.stages)[number]['id'] }) {
+  const [failed, setFailed] = useState(false)
+  return failed ? <StageDiagram id={id} /> : (
+    <img src={`${import.meta.env.BASE_URL}media/journey/${id}.webp`} width={960} height={640}
+      alt={sceneDescriptions[id]} loading="lazy" decoding="async" onError={() => setFailed(true)} />
+  )
+}
+
+function StageDiagram({ id }: { id: (typeof journey.stages)[number]['id'] }) {
   switch (id) {
     case 'space':
       return <DomainGlyph kind="constellation" />

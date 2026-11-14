@@ -112,3 +112,7 @@ Blue (cobalt on paper, mineral blue on dark) = desired signal / primary action. 
 3. **Loader waited 4 s on case-study URLs**: the hero scene's load steps never completed off the home page.
 4. **Accessibility**: contrast on blue fills, a focusable control inside the `aria-hidden` loader (now `inert`), and visually disabled but operable jammer sliders (now actually `disabled`).
 5. **Hero composition**: a camera view offset moves the scene beside the headline on desktop and below the readout on mobile.
+
+## Realism upgrade — preserve choreography
+
+Upgrade the existing six-world renderer rather than re-authoring the scroll experience. Retain camera stations, timeline, scene order, headings, progress and controls. Detailed original geometry avoids representing unverified manufacturer CAD as project hardware. Licensed Earth imagery provides actual geography; no remote runtime asset hosts. Batch fixed geometry by material and instance repeated spacecraft. Shader-based spectra and beam geometry retain their existing mathematical models. Synthetic LiDAR uses ray/surface intersections and is explicitly labelled. More realistic mobile posters are rendered from the same scene code. See [JOURNEY_REALISM.md](JOURNEY_REALISM.md) for the preservation contract, visual evidence and measured budgets.

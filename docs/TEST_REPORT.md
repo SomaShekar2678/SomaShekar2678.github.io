@@ -82,3 +82,16 @@ All sections render with **no console errors, page errors, failed requests or HT
 - Real touch devices (mobile was emulated).
 - Screen-reader walkthrough (structure is checked by axe and semantic tests only).
 - LinkedIn URL responds with HTTP 999 to automated requests (its bot block). It is the URL on every résumé, but it was not opened in a logged-in browser.
+
+## Journey realism upgrade — 15 November 2026
+
+- `npm run check`: strict type checking, lint, all 40 unit tests and production build passed.
+- `npm ls --depth=0`: installed dependency tree valid. No dependency changes.
+- Matched-scroll screenshots reviewed for all six scenes at 1440×900; five transition positions captured; desktop 1280×800, touch tablet 820×1180, mobile 390×844 and landscape 844×390 inspected. No horizontal overflow or console errors in the review run.
+- The camera stations, world spacing, camera interpolation and perception trajectory were compared against the baseline source and are unchanged. `journeyPath.ts`, narrative and section height were not changed.
+- Added browser checks for Earth-texture failure, WebGL context loss, reduced-motion posters without Earth texture downloads, and the served licensing page.
+- Initial desktop run: 28 passed / 1 failed. The frame-progress sample ran before the eased camera and first-use shader compilation settled. Reduced draw calls through instancing, added responsive economy mode, and made the test wait for the actually rendered final scene. The unchanged frame-count assertion passed in the targeted rerun.
+- Renderer counters, asset budgets, modelling limitations and image sources: [JOURNEY_REALISM.md](JOURNEY_REALISM.md).
+- Before/after comparisons: [visual review](review/journey-realism/README.md).
+- Only Chrome/SwiftShader and emulated mobile/touch viewports tested. Safari, Firefox, real phone GPUs and hardware FPS are unverified. The separately mentioned `portfolio.webm` was not available; baseline comparison used the running pre-change site.
+- Final production browser regression: **53 passed, 5 intentionally skipped** (29/29 desktop; 24 mobile passes plus 5 desktop-only skips), one worker, 2.7 minutes. Includes keyboard navigation, axe home/case-study audits, all case studies, lab controls, live journey rendering, fallback and licensing checks.

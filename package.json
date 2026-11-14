@@ -14,7 +14,8 @@
     "test:e2e": "playwright test",
     "check": "npm run typecheck && npm run lint && npm run test && npm run build",
     "assets": "node scripts/generate-assets.ts",
-    "covers": "node scripts/render-covers.ts"
+    "covers": "node scripts/render-covers.ts",
+    "journey:posters": "node scripts/render-journey.ts"
   },
   "engines": {
     "node": ">=22.12.0"

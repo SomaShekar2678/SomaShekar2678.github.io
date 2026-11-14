@@ -2,6 +2,10 @@ import * as THREE from 'three'
 import { conventionalWeights, exactCovariance, linToDb, mvdrWeights, patternSky, steering, unitVector, ura, type SkyGrid } from '../../lib/beamforming'
 import { JOURNEY_STAGES, journeyAt, smoothstep } from '../../lib/journeyPath'
 import type { DeviceTier } from '../../lib/env'
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js'
+import { ModelKit, navigationSatellite, receiveArray, processingBoard, sensorVehicle, satelliteFleet } from './journey/models'
+import { EarthAssets, earthModel, SUN } from './journey/earth'
+import { streetCloud } from './journey/perception'
 
 /**
  * "A signal's journey": six worlds placed along −z, one camera flying between them,
@@ -37,7 +41,6 @@ const SIGNAL = new THREE.Color('#5b7cff')
 const SIGNAL_BRIGHT = new THREE.Color('#b9c6ff')
 const AMBER = new THREE.Color('#ffb23f')
 const LIME = new THREE.Color('#c8f25a')
-const WHITE = new THREE.Color('#eeebe4')
 
 function glowTexture(): THREE.Texture {
   const c = document.createElement('canvas')
@@ -64,34 +67,29 @@ function rng(seed: number) {
   }
 }
 
-/** Points evenly spread on a unit sphere (Fibonacci lattice). */
-function fibonacciSphere(n: number): Float32Array {
-  const out = new Float32Array(n * 3)
-  const g = Math.PI * (3 - Math.sqrt(5))
-  for (let i = 0; i < n; i++) {
-    const y = 1 - (i / (n - 1)) * 2
-    const r = Math.sqrt(1 - y * y)
-    out[i * 3] = Math.cos(g * i) * r
-    out[i * 3 + 1] = y
-    out[i * 3 + 2] = Math.sin(g * i) * r
-  }
-  return out
-}
-
 /** Maths frame (z up) → three.js frame (y up). */
 function skyDir(az: number, el: number, r: number, out = new THREE.Vector3()) {
   const [x, y, z] = unitVector(az, el)
   return out.set(x * r, z * r, -y * r)
 }
 
-const pointsMaterial = (glow: THREE.Texture, color: THREE.Color, size: number, opacity = 1) =>
-  new THREE.PointsMaterial({ map: glow, color, size, transparent: true, opacity, depthWrite: false, blending: THREE.AdditiveBlending })
-
 export class JourneyScene {
   private renderer: THREE.WebGLRenderer
   private scene = new THREE.Scene()
   private camera = new THREE.PerspectiveCamera(42, 1, 0.1, 220)
   private opts: JourneySceneOptions
+  private kit = new ModelKit()
+  private earthAssets: EarthAssets
+  private environment: THREE.WebGLRenderTarget
+  private worlds: THREE.Group[] = []
+  private starfield!: THREE.Points
+  private sun = new THREE.DirectionalLight('#fff5e5', 3.2)
+  private fill = new THREE.HemisphereLight('#92aaca', '#111519', .65)
+  private adaptiveFrames = 0
+  private slowFrames = 0
+  private shadowWorld = -1
+  private renderedWorld = -1
+  private economy = false
   private raf = 0
   private visible = false
   private disposed = false
@@ -109,10 +107,11 @@ export class JourneyScene {
   // Animated parts.
   private timeUniforms: { value: number }[] = []
   private satellite!: THREE.Group
-  private arrayPattern!: { attr: THREE.BufferAttribute; gain: THREE.BufferAttribute; from: Float32Array; to: Float32Array; gFrom: Float32Array; gTo: Float32Array; last: number }
+  private arrayPattern!: { attr: THREE.BufferAttribute; gain: THREE.BufferAttribute; from: Float32Array; to: Float32Array; gFrom: Float32Array; gTo: Float32Array; last: number; geometry: THREE.BufferGeometry }
   private trajectory!: { line: THREE.Mesh; curve: THREE.CatmullRomCurve3; vehicle: THREE.Object3D; scan: THREE.Mesh; count: number }
   private fix!: { globe: THREE.Group; lines: THREE.LineSegments; pulse: THREE.Sprite }
   private portals: THREE.Mesh[] = []
+  private portalHalos: THREE.Mesh[] = []
 
   constructor(opts: JourneySceneOptions) {
     this.opts = opts
@@ -121,18 +120,46 @@ export class JourneyScene {
     const maxDpr = tier === 'high' ? 1.6 : tier === 'mid' ? 1.35 : 1
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, maxDpr))
     this.renderer.outputColorSpace = THREE.SRGBColorSpace
+    this.renderer.toneMapping = THREE.ACESFilmicToneMapping
+    this.renderer.toneMappingExposure = 1.12
+    // Shared low-resolution reflection environment: no external HDR or post-processing passes.
+    const pmrem = new THREE.PMREMGenerator(this.renderer)
+    const room = new RoomEnvironment()
+    this.environment = pmrem.fromScene(room, .04, .1, 100, { size: 128 })
+    room.dispose(); pmrem.dispose()
+    this.scene.environment = this.environment.texture
+    this.scene.environmentIntensity = .36
+    this.sun.position.copy(SUN).multiplyScalar(60)
+    this.renderer.shadowMap.enabled = tier !== 'low'
+    this.renderer.shadowMap.type = THREE.PCFShadowMap
+    this.sun.shadow.autoUpdate = false
+    this.sun.castShadow = tier !== 'low'
+    Object.assign(this.sun.shadow.camera, { left:-18, right:18, top:18, bottom:-18, near:1, far:100 })
+    this.sun.shadow.mapSize.set(1024,1024)
+    this.sun.shadow.bias=-.0002;this.sun.shadow.normalBias=.025
+    this.scene.add(this.sun, this.sun.target, this.fill)
+    this.earthAssets = new EarthAssets(this.renderer.capabilities.getMaxAnisotropy())
+    this.earthAssets.ready.then(() => {
+      if (!this.disposed) {
+        canvas.dataset.assets = 'ready'
+        if (!this.raf) this.renderFrame(0)
+      }
+    }).catch(() => { if (!this.disposed) this.opts.onContextLost?.() })
     this.scene.background = BG[0]!.clone()
-    this.scene.fog = new THREE.FogExp2(BG[0]!.getHex(), 0.03)
+    this.scene.fog = new THREE.FogExp2(BG[0]!.getHex(), 0.012)
     canvas.addEventListener('webglcontextlost', this.onContextLost, false)
 
     const k = tier === 'low' ? 0.5 : tier === 'mid' ? 0.75 : 1
-    this.buildStars(Math.round(2600 * k))
-    this.buildSpace(k)
-    this.buildInterference(k)
-    this.buildArray()
-    this.buildFpga(k)
-    this.buildPerception(k)
-    this.buildFix(k)
+    this.buildStars(Math.round(1200 * k))
+    // Isolate worlds at dwell, so later geometry cannot leak into an earlier shot.
+    // Both neighbours remain visible during the original camera flight.
+    for (const build of [() => this.buildSpace(k), () => this.buildInterference(k), () => this.buildArray(), () => this.buildFpga(k), () => this.buildPerception(k), () => this.buildFix(k)]) {
+      const existing = new Set(this.scene.children)
+      build()
+      const group = new THREE.Group()
+      for (const child of [...this.scene.children]) if (!existing.has(child)) group.add(child)
+      this.scene.add(group); this.worlds.push(group)
+    }
     this.buildPortals()
 
     this.resize()
@@ -147,105 +174,61 @@ export class JourneyScene {
   }
 
   private buildStars(n: number) {
-    const r = rng(1)
-    const pos = new Float32Array(n * 3)
+    // Distant celestial sphere moves with the camera: stars have no near-field parallax.
+    const r = rng(1), pos = new Float32Array(n * 3), colors = new Float32Array(n * 3)
     for (let i = 0; i < n; i++) {
-      pos[i * 3] = (r() - 0.5) * 160
-      pos[i * 3 + 1] = (r() - 0.5) * 110
-      pos[i * 3 + 2] = 40 - r() * (SPACING * JOURNEY_STAGES + 60)
+      const y = r() * 2 - 1, phi = r() * Math.PI * 2, horizontal = Math.sqrt(1 - y*y)
+      pos.set([horizontal*Math.cos(phi)*180, y*180, horizontal*Math.sin(phi)*180], i*3)
+      const brightness = .08 + Math.pow(r(), 7) * .68
+      colors.set([brightness*(.85+r()*.15), brightness*.94, brightness],i*3)
     }
     const g = new THREE.BufferGeometry()
     g.setAttribute('position', new THREE.BufferAttribute(pos, 3))
-    this.scene.add(new THREE.Points(g, pointsMaterial(this.glow, WHITE, 0.35, 0.55)))
+    g.setAttribute('color',new THREE.BufferAttribute(colors,3))
+    this.starfield = new THREE.Points(g,new THREE.PointsMaterial({size:.55,vertexColors:true,map:this.glow,transparent:true,opacity:.7,depthWrite:false,fog:false,toneMapped:false}))
+    this.starfield.renderOrder=-10
+    this.starfield.frustumCulled=false
+    this.scene.add(this.starfield)
   }
 
-  /** World 0 — satellite broadcasting expanding wavefronts toward a dark Earth. */
+  /** World 0 — representative navigation spacecraft, textured Earth and scientific wave overlays. */
   private buildSpace(k: number) {
     const c = center(0)
-    const earth = new THREE.Mesh(
-      new THREE.SphereGeometry(8, 64, 48),
-      new THREE.ShaderMaterial({
-        uniforms: { uRim: { value: SIGNAL } },
-        vertexShader: `varying vec3 vN; varying vec3 vV;
-          void main(){ vec4 mv = modelViewMatrix*vec4(position,1.0); vN = normalize(normalMatrix*normal); vV = normalize(-mv.xyz); gl_Position = projectionMatrix*mv; }`,
-        fragmentShader: `uniform vec3 uRim; varying vec3 vN; varying vec3 vV;
-          void main(){ float f = pow(1.0 - max(dot(vN, vV), 0.0), 3.0); gl_FragColor = vec4(mix(vec3(0.02,0.03,0.06), uRim, f), 1.0); }`,
-      }),
-    )
+    const earth = earthModel(8, this.earthAssets, k<.6?64:96)
     earth.position.set(c.x - 2, c.y - 11, c.z - 3)
     this.scene.add(earth)
-
-    const sat = new THREE.Group()
-    const bodyGeo = new THREE.BoxGeometry(0.9, 0.9, 1.3)
-    const body = new THREE.Mesh(bodyGeo, new THREE.MeshBasicMaterial({ color: 0x2a3140 }))
-    body.add(new THREE.LineSegments(new THREE.EdgesGeometry(bodyGeo), new THREE.LineBasicMaterial({ color: 0xeeebe4, transparent: true, opacity: 0.7 })))
-    const panelMat = new THREE.MeshBasicMaterial({ color: 0x14205a })
-    const panelL = new THREE.Mesh(new THREE.BoxGeometry(3, 0.05, 1), panelMat)
-    panelL.position.x = -2.1
-    const panelR = panelL.clone()
-    panelR.position.x = 2.1
-    const edges = new THREE.LineBasicMaterial({ color: SIGNAL_BRIGHT, transparent: true, opacity: 0.6 })
-    for (const p of [panelL, panelR]) {
-      const e = new THREE.LineSegments(new THREE.EdgesGeometry(p.geometry), edges)
-      e.position.copy(p.position)
-      // Solar-cell grid.
-      const grid = new THREE.LineSegments(
-        new THREE.WireframeGeometry(new THREE.PlaneGeometry(3, 1, 8, 3)),
-        new THREE.LineBasicMaterial({ color: SIGNAL, transparent: true, opacity: 0.45 }),
-      )
-      grid.rotation.x = -Math.PI / 2
-      grid.position.set(p.position.x, 0.03, 0)
-      sat.add(e, grid)
-    }
-    const dish = new THREE.Mesh(new THREE.ConeGeometry(0.35, 0.4, 20, 1, true), new THREE.MeshBasicMaterial({ color: 0xeeebe4, side: THREE.DoubleSide }))
-    dish.position.y = -0.65
-    sat.add(body, panelL, panelR, dish)
-    sat.position.set(c.x, c.y + 3.5, c.z)
-    this.satellite = sat
+    const sat = navigationSatellite(this.kit)
+    sat.position.set(c.x, c.y+3.5, c.z)
+    this.satellite=sat
     this.scene.add(sat)
-
-    // Expanding wavefront shells (point-sampled spheres), brighter on the Earth-facing side.
-    const shells = 5
-    const per = Math.round(520 * k)
-    const unit = fibonacciSphere(per)
-    const pos = new Float32Array(shells * per * 3)
-    const shell = new Float32Array(shells * per)
-    for (let s = 0; s < shells; s++) {
-      pos.set(unit, s * per * 3)
-      shell.fill(s, s * per, (s + 1) * per)
-    }
-    const g = new THREE.BufferGeometry()
-    g.setAttribute('position', new THREE.BufferAttribute(pos, 3))
-    g.setAttribute('aShell', new THREE.BufferAttribute(shell, 1))
-    const pts = new THREE.Points(
-      g,
-      new THREE.ShaderMaterial({
-        transparent: true,
-        depthWrite: false,
-        blending: THREE.AdditiveBlending,
-        uniforms: { uTime: this.timeUniform(), uColor: { value: SIGNAL_BRIGHT }, uPx: { value: this.renderer.getPixelRatio() } },
-        vertexShader: `uniform float uTime; uniform float uPx; attribute float aShell; varying float vA;
-          void main(){
-            float r = mod(uTime * 1.4 + aShell * 3.2, 16.0);
-            vec3 p = position * r;
-            vA = (1.0 - r / 16.0) * smoothstep(0.0, 1.5, r) * (0.25 + 0.75 * smoothstep(0.2, -0.9, position.y));
-            vec4 mv = modelViewMatrix * vec4(p, 1.0);
-            gl_PointSize = uPx * 4.0 * (10.0 / -mv.z);
-            gl_Position = projectionMatrix * mv;
+    // Same five expanding shells, same radius/time law; continuous wavefront caps replace particles.
+    const geo = new THREE.SphereGeometry(1,64,28,0,Math.PI*2,Math.PI*.54,Math.PI*.43)
+    for(let shell=0;shell<5;shell++){
+      const wave=new THREE.Mesh(geo,new THREE.ShaderMaterial({
+        transparent:true,depthWrite:false,side:THREE.DoubleSide,
+        uniforms:{uTime:this.timeUniform(),uShell:{value:shell}},
+        vertexShader:`uniform float uTime,uShell;varying float vA;varying vec3 vN,vV;varying vec2 vUv;
+          void main(){float r=mod(uTime*1.4+uShell*3.2,16.);vUv=uv;
+            vA=(1.-r/16.)*smoothstep(0.,1.5,r);
+            vec4 mv=modelViewMatrix*vec4(position*r,1.);vN=normalize(normalMatrix*normal);vV=normalize(-mv.xyz);
+            gl_Position=projectionMatrix*mv;}`,
+        fragmentShader:`varying float vA;varying vec3 vN,vV;varying vec2 vUv;
+          void main(){float edge=pow(1.-abs(dot(normalize(vN),normalize(vV))),6.);
+            float cap=smoothstep(0.,.12,vUv.y)*(1.-smoothstep(.8,1.,vUv.y));
+            gl_FragColor=vec4(.4,.62,.85,vA*cap*(.003+.10*edge));
+            #include <tonemapping_fragment>
+            #include <colorspace_fragment>
           }`,
-        fragmentShader: `uniform vec3 uColor; varying float vA;
-          void main(){ vec2 c = gl_PointCoord - 0.5; if (dot(c,c) > 0.25) discard; gl_FragColor = vec4(uColor, vA); }`,
-      }),
-    )
-    pts.position.copy(sat.position)
-    this.scene.add(pts)
+      }))
+      wave.frustumCulled=false;wave.position.copy(sat.position);this.scene.add(wave)
+    }
   }
 
   /** World 1 — spectrum waterfall: noise floor, a buried GNSS signal, a CW jammer and a chirp. */
   private buildInterference(k: number) {
     const c = center(1)
-    const nx = Math.round(170 * k) + 30
-    const nz = Math.round(44 * k) + 12
+    const nx = Math.round(360 * k) + 60
+    const nz = Math.round(70 * k) + 20
     const W = 28
     const D = 20
     const pos = new Float32Array(nx * nz * 3)
@@ -256,7 +239,7 @@ export class JourneyScene {
         pos[o] = (i / (nx - 1) - 0.5) * W
         pos[o + 1] = 0
         pos[o + 2] = (j / (nz - 1) - 0.5) * D
-        if (i < nx - 1) idx.push(j * nx + i, j * nx + i + 1)
+        if (i < nx - 1 && j < nz - 1) { const a = j*nx+i; idx.push(a,a+nx,a+1,a+1,a+nx,a+nx+1) }
       }
     }
     const g = new THREE.BufferGeometry()
@@ -264,10 +247,10 @@ export class JourneyScene {
     g.setIndex(idx)
     const mat = new THREE.ShaderMaterial({
       transparent: true,
-      depthWrite: false,
-      blending: THREE.AdditiveBlending,
+      depthWrite: true,
+      side: THREE.DoubleSide,
       uniforms: { uTime: this.timeUniform(), uAmber: { value: AMBER }, uBlue: { value: SIGNAL_BRIGHT }, uGrey: { value: new THREE.Color('#6b7280') } },
-      vertexShader: `uniform float uTime; varying float vH; varying float vSig; varying float vFront;
+      vertexShader: `uniform float uTime; varying float vH; varying float vSig; varying float vFront; varying vec3 vView; varying vec2 vPlane;
         float hash(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
         float noise(vec2 p){ vec2 i = floor(p), f = fract(p); vec2 u = f*f*(3.0-2.0*f);
           return mix(mix(hash(i), hash(i+vec2(1,0)), u.x), mix(hash(i+vec2(0,1)), hash(i+vec2(1,1)), u.x), u.y); }
@@ -283,24 +266,32 @@ export class JourneyScene {
           vH = cw + chirp;
           vSig = exp(-pow((p.x + 1.5) / 0.5, 2.0));
           vFront = smoothstep(-10.0, 10.0, position.z);
-          gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0);
+          vec4 mv = modelViewMatrix * vec4(p,1.0); vView = mv.xyz; vPlane = p.xz; gl_Position = projectionMatrix * mv;
         }`,
-      fragmentShader: `uniform vec3 uAmber; uniform vec3 uBlue; uniform vec3 uGrey; varying float vH; varying float vSig; varying float vFront;
+      fragmentShader: `uniform vec3 uAmber; uniform vec3 uBlue; uniform vec3 uGrey; varying float vH; varying float vSig; varying float vFront; varying vec3 vView; varying vec2 vPlane;
         void main(){
-          vec3 col = mix(uGrey, uAmber, smoothstep(0.4, 1.4, vH));
-          col = mix(col, uBlue, smoothstep(0.15, 0.6, vSig) * (1.0 - smoothstep(0.4, 1.0, vH)));
-          float a = (0.16 + 0.6 * vFront) * (0.5 + 0.5 * smoothstep(0.3, 1.5, vH)) + 0.55 * vSig * vFront;
-          gl_FragColor = vec4(col, a);
+          vec3 col = mix(vec3(.025,.045,.064), uAmber*.32, smoothstep(0.4, 1.4, vH));
+          col = mix(col, uBlue*.3, smoothstep(0.15, 0.6, vSig) * (1.0-smoothstep(0.4,1.0,vH)));
+          vec3 n = normalize(cross(dFdx(vView),dFdy(vView)));
+          if(!gl_FrontFacing)n=-n;
+          vec3 light=normalize(vec3(-.4,.8,.6));
+          float diff=.35+.65*abs(dot(n,light));
+          float spec=pow(abs(dot(n,normalize(light+normalize(-vView)))),12.);
+          float contour=1.-smoothstep(.018,.055,abs(fract(vPlane.y*.55)-.5));
+          col=col*diff+vec3(.12,.16,.2)*spec*.12+col*contour*.22;
+          gl_FragColor=vec4(col,.93);
+          #include <tonemapping_fragment>
+          #include <colorspace_fragment>
         }`,
     })
-    const waterfall = new THREE.LineSegments(g, mat)
+    const waterfall = new THREE.Mesh(g, mat)
     waterfall.position.copy(c)
     this.scene.add(waterfall)
 
     // Detection threshold plane.
     const plane = new THREE.Mesh(
       new THREE.PlaneGeometry(W, D),
-      new THREE.MeshBasicMaterial({ color: AMBER, transparent: true, opacity: 0.035, side: THREE.DoubleSide, depthWrite: false }),
+      new THREE.MeshBasicMaterial({ color: AMBER, transparent: true, opacity: 0.025, side: THREE.DoubleSide, depthWrite: false }),
     )
     plane.rotation.x = -Math.PI / 2
     plane.position.set(c.x, c.y + 1.15, c.z)
@@ -313,7 +304,7 @@ export class JourneyScene {
     const geom = ura(4, 4, 0.5)
     const sat = { az: 35, el: 58 }
     const jam = { az: 200, el: 12 }
-    const grid: SkyGrid = { nAz: 72, nEl: 22 }
+    const grid: SkyGrid = { nAz: 144, nEl: 44 }
     const a = steering(geom, sat.az, sat.el)
     const conv = conventionalWeights(a)
     const mvdr = mvdrWeights(
@@ -357,46 +348,39 @@ export class JourneyScene {
     g.setAttribute('position', attr)
     g.setAttribute('aGain', gain)
     g.setIndex(lines)
-    const mesh = new THREE.LineSegments(
-      g,
-      new THREE.ShaderMaterial({
-        transparent: true,
-        depthWrite: false,
-        blending: THREE.AdditiveBlending,
-        uniforms: { uLow: { value: new THREE.Color('#1a2a6e') }, uHigh: { value: SIGNAL }, uPeak: { value: SIGNAL_BRIGHT } },
-        vertexShader: `attribute float aGain; varying float vG; void main(){ vG = aGain; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
-        fragmentShader: `uniform vec3 uLow; uniform vec3 uHigh; uniform vec3 uPeak; varying float vG;
-          void main(){ vec3 c = mix(uLow, uHigh, smoothstep(0.0, 0.75, vG)); c = mix(c, uPeak, smoothstep(0.82, 1.0, vG)); gl_FragColor = vec4(c, 0.3 + 0.6 * vG); }`,
-      }),
-    )
-    mesh.position.copy(c)
-    this.scene.add(mesh)
-    this.arrayPattern = { attr, gain, from: from.pos, to: to.pos, gFrom: from.gain, gTo: to.gain, last: -1 }
-
-    // Elements, plate, satellite and jammer markers.
-    const inst = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.08, 0.1, 0.16, 14), new THREE.MeshBasicMaterial({ color: 0xeeebe4 }), geom.n)
-    const m4 = new THREE.Matrix4()
-    for (let n = 0; n < geom.n; n++) {
-      m4.makeTranslation(c.x + geom.x[n]! * 1.3, c.y + 0.1, c.z - geom.y[n]! * 1.3)
-      inst.setMatrixAt(n, m4)
+    const indices:number[]=[]
+    for(let j=0;j<grid.nEl-1;j++)for(let i=0;i<grid.nAz;i++){
+      const a=j*cols+i;indices.push(a,a+1,a+cols,a+1,a+cols+1,a+cols)
     }
-    this.scene.add(inst)
-    const plate = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(2.5, 0.03, 2.5)), new THREE.LineBasicMaterial({ color: 0xeeebe4, transparent: true, opacity: 0.3 }))
-    plate.position.copy(c)
-    this.scene.add(plate)
+    g.setIndex(indices);g.computeVertexNormals()
+    const material=new THREE.MeshPhysicalMaterial({color:SIGNAL,metalness:.18,roughness:.38,clearcoat:.25,
+      transparent:true,opacity:.62,side:THREE.DoubleSide,depthWrite:false})
+    material.onBeforeCompile=(shader)=>{
+      shader.vertexShader='attribute float aGain; varying float vGain;\n'+shader.vertexShader
+      shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\nvGain=aGain;')
+      shader.fragmentShader='varying float vGain;\n'+shader.fragmentShader
+      shader.fragmentShader=shader.fragmentShader.replace('#include <color_fragment>','#include <color_fragment>\ndiffuseColor.rgb=mix(vec3(.015,.04,.12),vec3(.055,.20,.48),smoothstep(.1,1.,vGain));')
+    }
+    const mesh=new THREE.Mesh(g,material)
+    mesh.frustumCulled=false;mesh.position.copy(c);this.scene.add(mesh)
+    const wireGeo=new THREE.BufferGeometry();wireGeo.setAttribute('position',attr);wireGeo.setIndex(lines)
+    const wire=new THREE.LineSegments(wireGeo,new THREE.LineBasicMaterial({color:SIGNAL_BRIGHT,transparent:true,opacity:.12,depthWrite:false}))
+    wire.position.copy(c);wire.frustumCulled=false;this.scene.add(wire)
+    this.arrayPattern = { attr, gain, from: from.pos, to: to.pos, gFrom: from.gain, gTo: to.gain, last: -1, geometry:g }
+    const array=receiveArray(this.kit,geom);array.position.copy(c);this.scene.add(array)
 
     const satPos = skyDir(sat.az, sat.el, 6.5).add(c)
     const satDot = new THREE.Sprite(new THREE.SpriteMaterial({ map: this.glow, color: SIGNAL_BRIGHT, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }))
-    satDot.scale.setScalar(0.9)
+    satDot.scale.setScalar(0.4)
     satDot.position.copy(satPos)
     this.scene.add(satDot)
     this.scene.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints([satPos, c.clone().setY(0.15)]), new THREE.LineBasicMaterial({ color: SIGNAL_BRIGHT, transparent: true, opacity: 0.6 })))
 
     const jamPos = skyDir(jam.az, jam.el, 6.2).add(c)
-    const jamBody = new THREE.Mesh(new THREE.OctahedronGeometry(0.22), new THREE.MeshBasicMaterial({ color: AMBER }))
+    const jamBody = new THREE.Mesh(new THREE.CylinderGeometry(.06,.18,.6,18), this.kit.copper)
     jamBody.position.copy(jamPos)
     const jamGlow = new THREE.Sprite(new THREE.SpriteMaterial({ map: this.glow, color: AMBER, transparent: true, opacity: 0.8, depthWrite: false, blending: THREE.AdditiveBlending }))
-    jamGlow.scale.setScalar(1.6)
+    jamGlow.scale.setScalar(.6)
     jamGlow.position.copy(jamPos)
     this.scene.add(jamBody, jamGlow)
     const dashed = new THREE.Line(
@@ -410,32 +394,9 @@ export class JourneyScene {
   /** World 3 — FPGA fabric with sample streams flowing through four processing blocks. */
   private buildFpga(k: number) {
     const c = center(3)
-    const cols = 18
-    const rows = 11
-    const tiles = new THREE.InstancedMesh(new THREE.BoxGeometry(0.9, 0.1, 0.9), new THREE.MeshBasicMaterial({ color: 0xffffff }), cols * rows)
-    const m4 = new THREE.Matrix4()
-    const col = new THREE.Color()
-    const r = rng(5)
-    let n = 0
-    for (let j = 0; j < rows; j++) {
-      for (let i = 0; i < cols; i++) {
-        m4.makeTranslation(c.x + (i - (cols - 1) / 2) * 1.08, c.y, c.z + (j - (rows - 1) / 2) * 1.08)
-        tiles.setMatrixAt(n, m4)
-        col.setRGB(0.035 + r() * 0.025, 0.04 + r() * 0.025, 0.06 + r() * 0.035, THREE.SRGBColorSpace)
-        tiles.setColorAt(n++, col)
-      }
-    }
-    this.scene.add(tiles)
-
-    const edgeMat = new THREE.LineBasicMaterial({ color: SIGNAL_BRIGHT, transparent: true, opacity: 0.85 })
-    const blockGeo = new THREE.BoxGeometry(2.3, 0.7, 3.4)
-    for (const x of [-6.5, -2.2, 2.2, 6.5]) {
-      const block = new THREE.Mesh(blockGeo, new THREE.MeshBasicMaterial({ color: 0x0d1430, transparent: true, opacity: 0.85 }))
-      block.position.set(c.x + x, c.y + 0.4, c.z)
-      const e = new THREE.LineSegments(new THREE.EdgesGeometry(blockGeo), edgeMat)
-      e.position.copy(block.position)
-      this.scene.add(block, e)
-    }
+    const board=processingBoard(this.kit)
+    board.position.copy(c);this.scene.add(board)
+    const r=rng(5)
 
     const lanes = 5
     const per = Math.round(70 * k) + 20
@@ -479,52 +440,7 @@ export class JourneyScene {
   /** World 4 — LiDAR-like point cloud of a street, with an estimated trajectory drawn as you scroll. */
   private buildPerception(k: number) {
     const c = center(4)
-    const r = rng(9)
-    const pts: number[] = []
-    const cols: number[] = []
-    const push = (x: number, y: number, z: number) => {
-      pts.push(c.x + x, c.y + y, c.z + z)
-      const b = 0.35 + Math.min(1, y / 5) * 0.55
-      cols.push(b * 0.92, b * 0.94, b)
-    }
-    const ground = Math.round(4200 * k)
-    for (let i = 0; i < ground; i++) push((r() - 0.5) * 30, (r() - 0.5) * 0.06, (r() - 0.5) * 22)
-    const buildings: [number, number, number, number, number][] = [
-      [-9, -6, 4, 3.5, 5],
-      [-9.5, 3, 3.5, 4, 3.6],
-      [8.5, -5, 4.5, 3, 6.5],
-      [9, 4, 3.5, 4.5, 4.2],
-      [-2.5, -8.5, 6, 2.5, 3],
-      [3, 8.5, 5, 2.5, 3.8],
-    ]
-    for (const [bx, bz, w, d, h] of buildings) {
-      const per = Math.round(420 * k)
-      for (let i = 0; i < per; i++) {
-        const face = Math.floor(r() * 4)
-        const u = r() - 0.5
-        const y = r() * h
-        if (face === 0) push(bx + u * w, y, bz - d / 2)
-        else if (face === 1) push(bx + u * w, y, bz + d / 2)
-        else if (face === 2) push(bx - w / 2, y, bz + u * d)
-        else push(bx + w / 2, y, bz + u * d)
-      }
-    }
-    for (let t = 0; t < 7; t++) {
-      const tx = (r() - 0.5) * 24
-      const tz = r() < 0.5 ? -3.8 : 3.8
-      for (let i = 0; i < 70; i++) {
-        const a = r() * Math.PI * 2
-        const y = 1.5 + r() * 1.6
-        const rad = 0.9 * (1 - (y - 1.5) / 1.8)
-        push(tx + Math.cos(a) * rad, y, tz + Math.sin(a) * rad)
-      }
-    }
-    const g = new THREE.BufferGeometry()
-    g.setAttribute('position', new THREE.Float32BufferAttribute(pts, 3))
-    g.setAttribute('color', new THREE.Float32BufferAttribute(cols, 3))
-    this.scene.add(
-      new THREE.Points(g, new THREE.PointsMaterial({ size: 0.09, vertexColors: true, transparent: true, opacity: 0.85, depthWrite: false })),
-    )
+    const cloud=streetCloud(k);cloud.position.copy(c);this.scene.add(cloud)
 
     const curve = new THREE.CatmullRomCurve3(
       [
@@ -544,12 +460,7 @@ export class JourneyScene {
     )
     line.geometry.setDrawRange(0, 0)
     this.scene.add(line)
-    const vehicle = new THREE.Group()
-    const cone = new THREE.Mesh(new THREE.ConeGeometry(0.28, 0.75, 16), new THREE.MeshBasicMaterial({ color: SIGNAL_BRIGHT }))
-    cone.rotation.z = -Math.PI / 2
-    const halo = new THREE.Sprite(new THREE.SpriteMaterial({ map: this.glow, color: SIGNAL, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }))
-    halo.scale.setScalar(2)
-    vehicle.add(cone, halo)
+    const vehicle = sensorVehicle(this.kit)
     this.scene.add(vehicle)
     const scan = new THREE.Mesh(
       new THREE.RingGeometry(0.95, 1, 64),
@@ -560,17 +471,12 @@ export class JourneyScene {
     this.trajectory = { line, curve, vehicle, scan, count }
   }
 
-  /** World 5 — dot globe; satellites' ranges converge on a single position fix. */
+  /** World 5 — textured Earth; satellites' ranges converge on a single position fix. */
   private buildFix(k: number) {
     const c = center(5)
     const globe = new THREE.Group()
     globe.position.copy(c)
-    const unit = fibonacciSphere(Math.round(2800 * k) + 400)
-    const pos = new Float32Array(unit.length)
-    for (let i = 0; i < unit.length; i++) pos[i] = unit[i]! * 6
-    const g = new THREE.BufferGeometry()
-    g.setAttribute('position', new THREE.BufferAttribute(pos, 3))
-    globe.add(new THREE.Points(g, new THREE.PointsMaterial({ color: 0x8d95a3, size: 0.07, transparent: true, opacity: 0.8 })))
+    globe.add(earthModel(6,this.earthAssets,k<.6?64:96))
     // Fix location: roughly central India (≈20°N, 78°E) on the globe's surface.
     const lat = (20 * Math.PI) / 180
     const lon = (78 * Math.PI) / 180
@@ -594,16 +500,13 @@ export class JourneyScene {
       [-3, 9, -2],
       [5, 2.5, 7],
     ]
-    const satGroup = new THREE.Group()
+    const satellitePositions:THREE.Vector3[]=[]
     for (const [x, y, z] of dirs) {
       const s = new THREE.Vector3(c.x + x, c.y + y, c.z + z)
       satPts.push(s.x, s.y, s.z, markerWorld.x, markerWorld.y, markerWorld.z)
-      const spr = new THREE.Sprite(new THREE.SpriteMaterial({ map: this.glow, color: SIGNAL_BRIGHT, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }))
-      spr.scale.setScalar(0.9)
-      spr.position.copy(s)
-      satGroup.add(spr)
+      satellitePositions.push(new THREE.Vector3(x,y,z))
     }
-    this.scene.add(satGroup)
+    const satGroup=satelliteFleet(this.kit,satellitePositions);satGroup.position.copy(c);this.scene.add(satGroup)
     const lg = new THREE.BufferGeometry()
     lg.setAttribute('position', new THREE.Float32BufferAttribute(satPts, 3))
     const lines = new THREE.LineSegments(lg, new THREE.LineBasicMaterial({ color: SIGNAL_BRIGHT, transparent: true, opacity: 0 }))
@@ -632,6 +535,7 @@ export class JourneyScene {
       halo.lookAt(b)
       this.scene.add(ring, halo)
       this.portals.push(ring)
+      this.portalHalos.push(halo)
     }
   }
 
@@ -646,6 +550,25 @@ export class JourneyScene {
   }
 
   // ─────────────────────────────────────────────────────────── API
+  /** Offline poster rendering uses exactly the same world, camera and materials as the live scene. */
+  async captureStill(progress: number, elapsed = 3) {
+    await this.earthAssets.ready
+    if (this.disposed) throw new Error('Cannot render a disposed journey')
+    this.setVisible(false)
+    cancelAnimationFrame(this.raf);this.raf=0
+    this.progress=this.progressSmoothed=progress;this.elapsed=elapsed
+    this.pointer.set(0,0);this.pointerSmoothed.set(0,0)
+    this.renderFrame(0)
+    return this.renderer.domElement.toDataURL('image/webp', .86)
+  }
+
+  /** QA diagnostics; does not expose visitor data or run a polling loop. */
+  getDiagnostics() {
+    const { render, memory } = this.renderer.info
+    return { calls:render.calls, triangles:render.triangles, points:render.points,
+      geometries:memory.geometries, textures:memory.textures, pixelRatio:this.renderer.getPixelRatio() }
+  }
+
   setProgress(p: number) {
     this.progress = p
     if (!this.raf && this.visible) this.loop()
@@ -681,14 +604,15 @@ export class JourneyScene {
     this.disposed = true
     cancelAnimationFrame(this.raf)
     this.renderer.domElement.removeEventListener('webglcontextlost', this.onContextLost)
+    const geometries=new Set<THREE.BufferGeometry>(),materials=new Set<THREE.Material>()
     this.scene.traverse((o) => {
-      const m = o as THREE.Mesh
-      m.geometry?.dispose()
-      const mat = m.material as THREE.Material | THREE.Material[] | undefined
-      if (Array.isArray(mat)) mat.forEach((x) => x.dispose())
-      else mat?.dispose()
+      const m=o as THREE.Mesh
+      if(m.geometry)geometries.add(m.geometry)
+      if(Array.isArray(m.material))m.material.forEach(x=>materials.add(x))
+      else if(m.material)materials.add(m.material)
     })
-    this.glow.dispose()
+    geometries.forEach(g=>g.dispose());materials.forEach(m=>m.dispose())
+    this.glow.dispose();this.earthAssets.dispose();this.kit.dispose();this.environment.dispose();this.sun.shadow.dispose()
     this.renderer.dispose()
     this.renderer.forceContextLoss()
   }
@@ -731,6 +655,29 @@ export class JourneyScene {
     pos.y += -this.pointerSmoothed.y * 0.5
     this.camera.position.copy(pos)
     this.camera.lookAt(look)
+    this.starfield.position.copy(this.camera.position)
+    this.starfield.visible=i===0||i===5||j.travel>0
+    this.worlds.forEach((world,index)=>{world.visible=index===i||(j.travel>0&&index===next)})
+    this.sun.target.position.copy(look)
+    this.sun.position.copy(look).addScaledVector(SUN,60)
+    const inSpace=i===0||i===5
+    this.fill.intensity=inSpace?.32:.75
+    this.scene.environmentIntensity=inSpace?.18:.4
+    // Downshift once if sustained frame time exceeds the budget. Never add resolution mid-scene.
+    if(dt>0 && !this.economy){
+      this.adaptiveFrames++;if(dt>.034)this.slowFrames++
+      if(this.adaptiveFrames===8&&this.slowFrames>5){
+        // Software rendering and constrained GPUs need a useful floor below native DPR.
+        this.renderer.setPixelRatio(.75)
+        this.renderer.shadowMap.enabled=false
+        this.renderer.domElement.dataset.quality='economy'
+        this.economy=true
+        this.resize()
+      }
+      if(this.adaptiveFrames===8){this.adaptiveFrames=0;this.slowFrames=0}
+    }
+    this.sun.shadow.needsUpdate=i!==this.shadowWorld||i===0||j.travel>0
+    this.shadowWorld=i
 
     // Background and fog blend between worlds.
     const bg = this.scene.background as THREE.Color
@@ -751,6 +698,7 @@ export class JourneyScene {
       for (let n = 0; n < ga.length; n++) ga[n] = ap.gFrom[n]! + (ap.gTo[n]! - ap.gFrom[n]!) * adapt
       ap.attr.needsUpdate = true
       ap.gain.needsUpdate = true
+      ap.geometry.computeVertexNormals()
       ap.last = adapt
     }
 
@@ -774,9 +722,18 @@ export class JourneyScene {
     this.fix.pulse.scale.setScalar(0.6 + pulse * 2.4)
     ;(this.fix.pulse.material as THREE.SpriteMaterial).opacity = 1 - pulse
 
-    for (const ring of this.portals) ring.rotation.z = t * 0.1
+    for (const [index, ring] of this.portals.entries()) {
+      ring.rotation.z = t * 0.1
+      ring.visible = j.index===index && j.travel>0
+      this.portalHalos[index]!.visible=ring.visible
+    }
 
     this.renderer.render(this.scene, this.camera)
+    // Updates once per scene, so browser QA can distinguish captions from an actually rendered world.
+    if (i!==this.renderedWorld) {
+      this.renderedWorld=i
+      this.renderer.domElement.dataset.renderStage=String(i)
+    }
     if (!this.firstFrame) {
       this.firstFrame = true
       this.opts.onFirstFrame?.()
