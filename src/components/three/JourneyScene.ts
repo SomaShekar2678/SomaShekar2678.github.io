@@ -3,8 +3,9 @@ import { conventionalWeights, exactCovariance, linToDb, mvdrWeights, patternSky,
 import { JOURNEY_STAGES, journeyAt, smoothstep } from '../../lib/journeyPath'
 import type { DeviceTier } from '../../lib/env'
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js'
-import { ModelKit, navigationSatellite, receiveArray, processingBoard, sensorVehicle, satelliteFleet } from './journey/models'
+import { ModelKit, receiveArray, processingBoard, sensorVehicle, satelliteFleet } from './journey/models'
 import { EarthAssets, earthModel, SUN } from './journey/earth'
+import { orbitalSatellite, orbitalEarth, orbitalBackdrop } from './journey/orbitDetail'
 import { streetCloud } from './journey/perception'
 
 /**
@@ -107,6 +108,7 @@ export class JourneyScene {
   // Animated parts.
   private timeUniforms: { value: number }[] = []
   private satellite!: THREE.Group
+  private orbitalSky!: THREE.Group
   private arrayPattern!: { attr: THREE.BufferAttribute; gain: THREE.BufferAttribute; from: Float32Array; to: Float32Array; gFrom: Float32Array; gTo: Float32Array; last: number; geometry: THREE.BufferGeometry }
   private trajectory!: { line: THREE.Mesh; curve: THREE.CatmullRomCurve3; vehicle: THREE.Object3D; scan: THREE.Mesh; count: number }
   private fix!: { globe: THREE.Group; lines: THREE.LineSegments; pulse: THREE.Sprite }
@@ -194,10 +196,12 @@ export class JourneyScene {
   /** World 0 — representative navigation spacecraft, textured Earth and scientific wave overlays. */
   private buildSpace(k: number) {
     const c = center(0)
-    const earth = earthModel(8, this.earthAssets, k<.6?64:96)
+    this.orbitalSky = orbitalBackdrop(k, this.timeUniform())
+    this.scene.add(this.orbitalSky)
+    const earth = orbitalEarth(this.earthAssets, k<.6?64:96)
     earth.position.set(c.x - 2, c.y - 11, c.z - 3)
     this.scene.add(earth)
-    const sat = navigationSatellite(this.kit)
+    const sat = orbitalSatellite(this.kit)
     sat.position.set(c.x, c.y+3.5, c.z)
     this.satellite=sat
     this.scene.add(sat)
@@ -656,10 +660,12 @@ export class JourneyScene {
     this.camera.position.copy(pos)
     this.camera.lookAt(look)
     this.starfield.position.copy(this.camera.position)
-    this.starfield.visible=i===0||i===5||j.travel>0
+    this.starfield.visible=i!==0&&(i===5||j.travel>0)
+    this.orbitalSky.position.copy(this.camera.position).multiplyScalar(.995)
     this.worlds.forEach((world,index)=>{world.visible=index===i||(j.travel>0&&index===next)})
     this.sun.target.position.copy(look)
     this.sun.position.copy(look).addScaledVector(SUN,60)
+    this.sun.color.set(i===0 ? '#ffe5c2' : '#fff5e5')
     const inSpace=i===0||i===5
     this.fill.intensity=inSpace?.32:.75
     this.scene.environmentIntensity=inSpace?.18:.4
