@@ -334,3 +334,31 @@ test.describe('journey asset resilience', () => {
     expect(await source.text()).toContain('clouds resized to 1024×512')
   })
 })
+
+test('Scene02 progresses through all five phases and preserves its neighbours', async ({ page }, info) => {
+  test.skip(info.project.name === 'mobile', 'touch devices retain illustrated panels')
+  test.setTimeout(60_000)
+  const problems = watch(page)
+  await ready(page)
+  const section=page.locator('#journey'),canvas=section.locator('canvas')
+  async function scroll(progress:number) {
+    const y=await section.evaluate((el,p)=>el.getBoundingClientRect().top+scrollY+((el as HTMLElement).offsetHeight-innerHeight)*p,progress)
+    // Exact phase checks use the native scrollbar path. Wheel deltas are scaled by Lenis (0.95)
+    // and accumulated against its animated target, so raw pixel deltas are not absolute positions.
+    await page.evaluate(target=>scrollTo({top:target,behavior:'instant'}),y)
+    await expect.poll(async()=>Math.abs(await page.evaluate(()=>scrollY)-y), { timeout: 10_000 }).toBeLessThan(2)
+  }
+  await scroll(.3/6)
+  await expect(canvas).toHaveAttribute('data-render-stage','0')
+  for(const [local,phase] of [[.06,'transmitter'],[.19,'fields'],[.31,'spectrum'],[.47,'receiver'],[.56,'array']] as const){
+    await scroll((1+local)/6)
+    await expect(canvas).toHaveAttribute('data-render-stage','1')
+    await expect(canvas).toHaveAttribute('data-interference-phase',phase)
+  }
+  await scroll(2.3/6)
+  await expect(canvas).toHaveAttribute('data-render-stage','2')
+  await scroll(1.06/6)
+  await expect(canvas).toHaveAttribute('data-render-stage','1')
+  await expect(canvas).toHaveAttribute('data-interference-phase','transmitter')
+  expect(problems).toEqual([])
+})

@@ -15,6 +15,7 @@ try{
  await page.waitForSelector('body[data-ready="true"]',{state:'attached'})
  const folder=resolve(root,'public/media/journey');mkdirSync(folder,{recursive:true})
  for(const [i,name] of ['space','interference','array','fpga','perception','fix'].entries()){
+   if(process.argv.includes('--scene02') && i!==1)continue
    const result=await page.evaluate(i=>(window as unknown as Studio).journeyStudio.capture(i),i)
    const buffer=Buffer.from(result.image.split(',')[1]!,'base64');writeFileSync(resolve(folder,`${name}.webp`),buffer)
    console.log(name,buffer.length,result.diagnostics)

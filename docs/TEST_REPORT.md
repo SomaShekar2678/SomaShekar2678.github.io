@@ -1,3 +1,29 @@
+# Scene 02 validation — 2026-11-17
+
+Current implementation details, scientific assumptions, assets and reproduction commands: [SCENE02.md](SCENE02.md).
+
+| Executed check | Result |
+| --- | --- |
+| `npm run check` | Passed: strict TypeScript, lint, 45 unit tests in 6 files, production build. |
+| Final test/QA-script TypeScript and lint | Passed after correcting the new browser test. |
+| Full production-browser run, one worker | 53 passed, 6 intentional mobile skips, 1 initial failure in the new exact-phase test. |
+| Corrected exact-phase test, desktop | 1 passed, including all five phases, Scene01/03 neighbours and reverse scrolling. All 54 applicable browser checks have passed across these runs. |
+| Screenshot review | A–E plus original flights captured; rendered portfolio at 1440×900 and 1280×800; touch fallback at 390×844, 820×1180 and 844×390. |
+| Scope comparison | Scene01, 03–06 builders, portals, camera stations, resize, journey timing, section JSX/CSS and content unchanged. |
+| Renderer complexity (final captures) | A/B: 48 calls, 160,792 triangles; C: 15 / 50,446; D: 36 / 2,856; E: 23 / 79,642. Largest inspected transition: 57 / 181,656. Within stated complexity budgets. |
+| Production bundle | Complete lazy journey chunk 47.31 kB raw / 17.49 kB gzip, within the 25 kB gzip budget. |
+| `git diff --check` | Passed. |
+
+**Initial failure and resolution:** the new test treated a wheel delta as an absolute scroll displacement. Lenis applies a 0.95 wheel multiplier and accumulates against an animated target, so a second delta could overshoot the intended phase. A first attempted fix waited for the unscaled target and timed out 58 px short. The final test uses the supported native scrollbar path for exact positions, then waits for actual scroll position and the rendered phase. The corrected test passed in 22.4 seconds. No production motion code was changed. Earlier interactive screenshot runs also exercised actual wheel movement.
+
+The other 53 checks cover the existing page/links/resume, keyboard navigation, lab controls, all case studies, axe audits, reduced motion, missing-texture fallback, explicit WebGL fallback and context loss. No app console/network failures were observed in the completed visual review. The development-only studio initially requested a nonexistent favicon; it now references the existing icon and the review records no errors.
+
+Screenshots and renderer counters: [review/scene02/](review/scene02/). Generated geometry falls to zero on disposal; one internal texture slot remains in renderer statistics before context release. Hardware-GPU frame rate, Safari/Firefox, real phones and a manual screen-reader walkthrough were not verified. No numerical visual-quality score or operational RF-performance claim is made. Mobile and reduced-motion visitors retain illustrated panels.
+
+The workflow deployment and live Scene02 check are verified after publication; their outcome is reported in the completion message. No additional personal content is needed for this scene; measured RF captures remain optional future input.
+
+---
+
 # Test report — 2026-10-19 (redesign v2)
 
 Environment: Ubuntu Linux (6.8 kernel), Node 24.22.0 LTS, Google Chrome (system install) driven by Playwright 1.64.1. WebGL ran in software (SwiftShader). Every result below was produced by actually running the command.

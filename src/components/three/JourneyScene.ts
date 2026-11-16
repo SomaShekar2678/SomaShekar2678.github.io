@@ -7,6 +7,7 @@ import { ModelKit, receiveArray, processingBoard, sensorVehicle, satelliteFleet 
 import { EarthAssets, earthModel, SUN } from './journey/earth'
 import { orbitalSatellite, orbitalEarth, orbitalBackdrop } from './journey/orbitDetail'
 import { streetCloud } from './journey/perception'
+import { interferenceWorld } from './journey/interference'
 
 /**
  * "A signal's journey": six worlds placed along −z, one camera flying between them,
@@ -107,6 +108,7 @@ export class JourneyScene {
 
   // Animated parts.
   private timeUniforms: { value: number }[] = []
+  private interference!: ReturnType<typeof interferenceWorld>
   private satellite!: THREE.Group
   private orbitalSky!: THREE.Group
   private arrayPattern!: { attr: THREE.BufferAttribute; gain: THREE.BufferAttribute; from: Float32Array; to: Float32Array; gFrom: Float32Array; gTo: Float32Array; last: number; geometry: THREE.BufferGeometry }
@@ -228,78 +230,11 @@ export class JourneyScene {
     }
   }
 
-  /** World 1 — spectrum waterfall: noise floor, a buried GNSS signal, a CW jammer and a chirp. */
+  /** World 1 — transmitter → fields → spectrum → receiver → array. */
   private buildInterference(k: number) {
-    const c = center(1)
-    const nx = Math.round(360 * k) + 60
-    const nz = Math.round(70 * k) + 20
-    const W = 28
-    const D = 20
-    const pos = new Float32Array(nx * nz * 3)
-    const idx: number[] = []
-    for (let j = 0; j < nz; j++) {
-      for (let i = 0; i < nx; i++) {
-        const o = (j * nx + i) * 3
-        pos[o] = (i / (nx - 1) - 0.5) * W
-        pos[o + 1] = 0
-        pos[o + 2] = (j / (nz - 1) - 0.5) * D
-        if (i < nx - 1 && j < nz - 1) { const a = j*nx+i; idx.push(a,a+nx,a+1,a+1,a+nx,a+nx+1) }
-      }
-    }
-    const g = new THREE.BufferGeometry()
-    g.setAttribute('position', new THREE.BufferAttribute(pos, 3))
-    g.setIndex(idx)
-    const mat = new THREE.ShaderMaterial({
-      transparent: true,
-      depthWrite: true,
-      side: THREE.DoubleSide,
-      uniforms: { uTime: this.timeUniform(), uAmber: { value: AMBER }, uBlue: { value: SIGNAL_BRIGHT }, uGrey: { value: new THREE.Color('#6b7280') } },
-      vertexShader: `uniform float uTime; varying float vH; varying float vSig; varying float vFront; varying vec3 vView; varying vec2 vPlane;
-        float hash(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
-        float noise(vec2 p){ vec2 i = floor(p), f = fract(p); vec2 u = f*f*(3.0-2.0*f);
-          return mix(mix(hash(i), hash(i+vec2(1,0)), u.x), mix(hash(i+vec2(0,1)), hash(i+vec2(1,1)), u.x), u.y); }
-        void main(){
-          vec3 p = position;
-          float row = p.z - uTime * 2.2;
-          float floorN = 0.35 + 0.45 * noise(vec2(p.x * 2.6, row * 1.3));
-          float sig = 0.18 * exp(-pow((p.x + 1.5) / 0.35, 2.0));
-          float cw = 4.2 * exp(-pow((p.x - 6.0) / 0.16, 2.0)) * (0.85 + 0.15 * sin(uTime * 3.0));
-          float chirpX = -12.0 + mod(row * 0.9 + uTime * 0.6, 22.0);
-          float chirp = 1.7 * exp(-pow((p.x - chirpX) / 0.45, 2.0));
-          p.y = floorN + sig + cw + chirp;
-          vH = cw + chirp;
-          vSig = exp(-pow((p.x + 1.5) / 0.5, 2.0));
-          vFront = smoothstep(-10.0, 10.0, position.z);
-          vec4 mv = modelViewMatrix * vec4(p,1.0); vView = mv.xyz; vPlane = p.xz; gl_Position = projectionMatrix * mv;
-        }`,
-      fragmentShader: `uniform vec3 uAmber; uniform vec3 uBlue; uniform vec3 uGrey; varying float vH; varying float vSig; varying float vFront; varying vec3 vView; varying vec2 vPlane;
-        void main(){
-          vec3 col = mix(vec3(.025,.045,.064), uAmber*.32, smoothstep(0.4, 1.4, vH));
-          col = mix(col, uBlue*.3, smoothstep(0.15, 0.6, vSig) * (1.0-smoothstep(0.4,1.0,vH)));
-          vec3 n = normalize(cross(dFdx(vView),dFdy(vView)));
-          if(!gl_FrontFacing)n=-n;
-          vec3 light=normalize(vec3(-.4,.8,.6));
-          float diff=.35+.65*abs(dot(n,light));
-          float spec=pow(abs(dot(n,normalize(light+normalize(-vView)))),12.);
-          float contour=1.-smoothstep(.018,.055,abs(fract(vPlane.y*.55)-.5));
-          col=col*diff+vec3(.12,.16,.2)*spec*.12+col*contour*.22;
-          gl_FragColor=vec4(col,.93);
-          #include <tonemapping_fragment>
-          #include <colorspace_fragment>
-        }`,
-    })
-    const waterfall = new THREE.Mesh(g, mat)
-    waterfall.position.copy(c)
-    this.scene.add(waterfall)
-
-    // Detection threshold plane.
-    const plane = new THREE.Mesh(
-      new THREE.PlaneGeometry(W, D),
-      new THREE.MeshBasicMaterial({ color: AMBER, transparent: true, opacity: 0.025, side: THREE.DoubleSide, depthWrite: false }),
-    )
-    plane.rotation.x = -Math.PI / 2
-    plane.position.set(c.x, c.y + 1.15, c.z)
-    this.scene.add(plane)
+    this.interference = interferenceWorld(this.kit, k)
+    this.interference.root.position.copy(center(1))
+    this.scene.add(this.interference.root)
   }
 
   /** World 2 — 4×4 array; pattern morphs from conventional to MVDR as you scroll. */
@@ -693,6 +628,13 @@ export class JourneyScene {
     // World 0: satellite slowly rolls.
     this.satellite.rotation.y = t * 0.15
     this.satellite.rotation.z = Math.sin(t * 0.4) * 0.05
+
+    // Scene-local phases leave the global camera, dwell and flight untouched.
+    const interferencePhase = this.interference.update(i === 1 ? j.local : i > 1 ? 1 : 0, t)
+    if (i === 1) {
+      if (this.interference.moving || this.renderer.domElement.dataset.interferencePhase !== interferencePhase) this.sun.shadow.needsUpdate = true
+      this.renderer.domElement.dataset.interferencePhase = interferencePhase
+    }
 
     // World 2: pattern adapts (conventional → MVDR) while dwelling at the array.
     const adapt = i === 2 ? smoothstep(0.08, 0.5, j.local) : i > 2 ? 1 : 0
