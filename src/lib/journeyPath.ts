@@ -1,13 +1,13 @@
 /**
  * Maps scroll progress (0..1 through the journey section) to a stage.
- * Scene 02 gets four scroll units for its five chapters; other scenes retain one.
+ * Scene 02 gets 2.5 scroll units for its five chapters; other scenes retain one.
  * Local coordinates stay compatible with the existing visual/camera choreography.
  */
 export const JOURNEY_STAGES = 6
 /** Fraction of each slice spent dwelling before travelling on. */
 export const DWELL = 0.58
-export const INTERFERENCE_DWELL = 0.8
-export const SCENE_SCROLL_WEIGHTS = [1, 4, 1, 1, 1, 1] as const
+export const INTERFERENCE_DWELL = 0.72
+export const SCENE_SCROLL_WEIGHTS = [1, 2.5, 1, 1, 1, 1] as const
 export const JOURNEY_SCROLL_UNITS = SCENE_SCROLL_WEIGHTS.reduce((sum, weight) => sum + weight, 0)
 // Original travel span: 560svh across six units. Keep that distance for every ordinary scene.
 export const JOURNEY_HEIGHT_SVH = 100 + (560 / JOURNEY_STAGES) * JOURNEY_SCROLL_UNITS

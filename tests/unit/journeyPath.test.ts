@@ -27,10 +27,10 @@ describe('journey path', () => {
 
   it('gives Scene02 longer holds and a slower exit without speeding up other scenes', () => {
     const distance = (i: number, a: number, b: number) => (journeyProgress(i,b)-journeyProgress(i,a))*(JOURNEY_HEIGHT_SVH-100)
-    expect(distance(1,0,.58)).toBeCloseTo(560/6*4*.8)
-    expect(distance(1,.58,1)).toBeCloseTo(560/6*4*.2)
+    expect(distance(1,0,.58)).toBeCloseTo(560/6*2.5*.72)
+    expect(distance(1,.58,1)).toBeCloseTo(560/6*2.5*.28)
     for (const i of [0,2,3,4,5]) expect(distance(i,0,1)).toBeCloseTo(560/6)
-    expect(distance(1,.54,.58)).toBeGreaterThan(20) // final array gets a readable hold before flight
+    expect(distance(1,.54,.58)).toBeGreaterThan(10) // final array gets a readable hold before flight
   })
 
   it('round-trips phase coordinates and stays continuous at both Scene02 boundaries', () => {

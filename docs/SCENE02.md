@@ -1,6 +1,14 @@
 # Scene 02 — The Invisible War
 
-## Pacing revision — 2026-11-23
+## Current pacing — 2026-11-23, shortened after review
+
+The four-unit revision below felt too long. Scene02 now uses **2.5 scroll units and 72% dwell**: 37.5% less total scroll, 43.75% shorter internal phases, and a 12.5% shorter outgoing flight than that revision. This keeps approximately 3.1× the original phase distance and 1.67× the original exit distance. Total desktop journey height is now **800svh**. Smoothstep transitions, camera easing, other scenes and fallback panels are unchanged. No additional assets or content are required.
+
+Changed files: `src/lib/journeyPath.ts`, corresponding timing assertions in `tests/unit/journeyPath.test.ts`, and this report. Run with `npm run dev`; deployment uses the existing push-to-main GitHub Pages workflow.
+
+Validation for the shorter revision: `npm run check` passed type checking, lint, 47 unit tests and production build. Targeted journey browser tests passed 4 checks with 2 intentional mobile skips. Chrome/SwiftShader visual review at the reported 1030×904 viewport exercised wheel scrolling from fields through spectrum, receiver and array into Scene03, with no console errors; 390×844 touch retained panels with zero horizontal overflow. Other browsers and real phones were not retested. Duration remains controlled by scroll speed.
+
+## Previous pacing revision — 2026-11-23
 
 At the owner's request, Scene02 now occupies four scroll units instead of one. Its dwell takes 80% of that interval (previously 58%), extending each internal visual phase by approximately 5.52× in scroll distance and the outgoing flight by 1.90×. The full desktop journey is 940svh instead of 660svh. Every other scene retains its previous scroll distance. No forced autoplay delay or scroll lock is introduced; the skip link remains available.
 
