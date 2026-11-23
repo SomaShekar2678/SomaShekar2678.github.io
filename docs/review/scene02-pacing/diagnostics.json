@@ -1,0 +1,76 @@
+{
+  "errors": [],
+  "A": {
+    "calls": 48,
+    "triangles": 160792,
+    "points": 0,
+    "geometries": 47,
+    "textures": 15,
+    "pixelRatio": 1
+  },
+  "B": {
+    "calls": 48,
+    "triangles": 160792,
+    "points": 0,
+    "geometries": 47,
+    "textures": 15,
+    "pixelRatio": 1
+  },
+  "C": {
+    "calls": 15,
+    "triangles": 50446,
+    "points": 0,
+    "geometries": 60,
+    "textures": 25,
+    "pixelRatio": 1
+  },
+  "D": {
+    "calls": 36,
+    "triangles": 2856,
+    "points": 0,
+    "geometries": 89,
+    "textures": 43,
+    "pixelRatio": 1
+  },
+  "E": {
+    "calls": 23,
+    "triangles": 79642,
+    "points": 0,
+    "geometries": 105,
+    "textures": 47,
+    "pixelRatio": 1
+  },
+  "into": {
+    "calls": 57,
+    "triangles": 181656,
+    "points": 3600,
+    "geometries": 107,
+    "textures": 47,
+    "pixelRatio": 1
+  },
+  "out": {
+    "calls": 34,
+    "triangles": 117348,
+    "points": 1200,
+    "geometries": 121,
+    "textures": 48,
+    "pixelRatio": 1
+  },
+  "disposal": {
+    "calls": 34,
+    "triangles": 117348,
+    "points": 1200,
+    "geometries": 0,
+    "textures": 1,
+    "pixelRatio": 1
+  },
+  "mobile": {
+    "horizontalOverflow": 0
+  },
+  "tablet": {
+    "horizontalOverflow": 0
+  },
+  "landscape": {
+    "horizontalOverflow": 0
+  }
+}

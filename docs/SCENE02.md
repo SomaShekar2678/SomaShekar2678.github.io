@@ -1,5 +1,13 @@
 # Scene 02 — The Invisible War
 
+## Pacing revision — 2026-11-23
+
+At the owner's request, Scene02 now occupies four scroll units instead of one. Its dwell takes 80% of that interval (previously 58%), extending each internal visual phase by approximately 5.52× in scroll distance and the outgoing flight by 1.90×. The full desktop journey is 940svh instead of 660svh. Every other scene retains its previous scroll distance. No forced autoplay delay or scroll lock is introduced; the skip link remains available.
+
+`journeyPath.ts` remaps weighted scroll progress to the existing scene-local coordinates. The phase table below therefore remains valid as a **visual coordinate**, not as a fraction of Scene02's new scroll interval. The renderer, smoothstep entrances, camera route, labels and other scene builders are unchanged. `journeyProgress()` supplies the inverse mapping to tests and poster/review tools so all snapshots still select the intended scene. Touch/reduced-motion panels are unchanged.
+
+Files changed for pacing: `src/lib/journeyPath.ts`, `src/sections/Journey.tsx`, `src/render/journey.ts`, `scripts/review-scene02.ts`, and the journey unit/browser tests. No new assets or owner input required. See the latest test report and `review/scene02-pacing/` for validation. The original scope below describes the earlier visual upgrade; this explicit pacing revision supersedes its timing-preservation constraint.
+
 Scope: replace the interference world only. Existing visible caption “Buried by interference,” DOM copy, navigation, global design, six camera stations, 0.58 dwell fraction, 660svh section and original portal flights are preserved. The satellite, array-adaptation, FPGA, perception and position-fix builders are unchanged. This is a procedural engineering illustration, not a claim of photorealistic captured footage.
 
 ## Implemented sequence

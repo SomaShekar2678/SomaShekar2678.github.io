@@ -120,3 +120,8 @@ Upgrade the existing six-world renderer rather than re-authoring the scroll expe
 ## Scene 02 — interference narrative (2026-11-17)
 
 Keep the original camera flight and split only the interference world's existing dwell into five scene-local compositions. Reuse the representative satellite and receiving-array model helpers without changing them. Batch new transmitter/receiver hardware; render enlarged wavefront shells with instancing. Keep carrier, code rate and correlation delay units explicit. Use a seeded complex-baseband PRN1 correlation experiment instead of hand-drawn degradation curves; retain a shared before/after ordinate and avoid an unsupported lock-loss status. Preserve the existing touch/reduced-motion panels and update only their interference poster. No external art assets, dependencies or professional-content changes. See [SCENE02.md](SCENE02.md) for formulas, sources, limitations, files and reproduction commands.
+
+
+## Scene02 pacing — 2026-11-23
+
+The owner found the five phases and outgoing flight rushed. Allocate four scroll units to Scene02 with 80% dwell, retaining canonical scene-local coordinates and preserving other scenes' physical scroll distances. Extend desktop section height to 940svh. Keep native scroll/skip behaviour; do not impose time delays. Share inverse progress mapping with QA and poster generation rather than keeping obsolete equal-slice fractions. Touch and reduced-motion panels remain unchanged.

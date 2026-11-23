@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { journey } from '../content/journey'
 import { deviceTier, hasWebGL, useMediaQuery, useReducedMotion } from '../lib/env'
-import { JOURNEY_STAGES, journeyAt } from '../lib/journeyPath'
+import { JOURNEY_STAGES, JOURNEY_HEIGHT_SVH, journeyAt } from '../lib/journeyPath'
 import { useInView } from '../hooks/useInView'
 import { DomainGlyph } from '../components/visualizations/DomainGlyph'
 import { BeamPolar } from '../components/visualizations/BeamPolar'
@@ -124,7 +124,7 @@ function JourneyImmersive({ onFail }: { onFail: () => void }) {
       className={`theme-night ${styles.journey}`}
       data-nav="dark"
       aria-labelledby="journey-title"
-      style={{ height: `${JOURNEY_STAGES * 100 + 60}svh` }}
+      style={{ height: `${JOURNEY_HEIGHT_SVH}svh` }}
     >
       <div ref={stageRef} className={styles.stage}>
         <canvas ref={canvasRef} className={styles.canvas} aria-hidden="true" />

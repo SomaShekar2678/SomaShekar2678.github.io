@@ -1,6 +1,7 @@
 import { expect, test, type Page } from '@playwright/test'
 import AxeBuilder from '@axe-core/playwright'
 import { projects } from '../../src/content/projects'
+import { journeyProgress } from '../../src/lib/journeyPath'
 import { sections } from '../../src/content/site'
 
 /** Collects console errors, page errors, failed requests and HTTP errors for a page. */
@@ -253,7 +254,7 @@ test.describe('signal journey', () => {
     const box = await section.evaluate((el) => ({ top: el.getBoundingClientRect().top + window.scrollY, h: el.getBoundingClientRect().height }))
     const span = box.h - 900
     const title = (i: number) => section.locator('ol[aria-hidden] > li').nth(i)
-    for (const [f, i] of [[0.05, 0], [0.38, 2], [0.95, 5]] as const) {
+    for (const [f, i] of [[journeyProgress(0,.3), 0], [journeyProgress(2,.3), 2], [journeyProgress(5,.7), 5]] as const) {
       await page.evaluate((y) => window.scrollTo(0, y), box.top + span * f)
       await expect(title(i)).toHaveAttribute('data-active', { timeout: 5000 })
     }
@@ -348,16 +349,16 @@ test('Scene02 progresses through all five phases and preserves its neighbours', 
     await page.evaluate(target=>scrollTo({top:target,behavior:'instant'}),y)
     await expect.poll(async()=>Math.abs(await page.evaluate(()=>scrollY)-y), { timeout: 10_000 }).toBeLessThan(2)
   }
-  await scroll(.3/6)
+  await scroll(journeyProgress(0,.3))
   await expect(canvas).toHaveAttribute('data-render-stage','0')
   for(const [local,phase] of [[.06,'transmitter'],[.19,'fields'],[.31,'spectrum'],[.47,'receiver'],[.56,'array']] as const){
-    await scroll((1+local)/6)
+    await scroll(journeyProgress(1,local))
     await expect(canvas).toHaveAttribute('data-render-stage','1')
     await expect(canvas).toHaveAttribute('data-interference-phase',phase)
   }
-  await scroll(2.3/6)
+  await scroll(journeyProgress(2,.3))
   await expect(canvas).toHaveAttribute('data-render-stage','2')
-  await scroll(1.06/6)
+  await scroll(journeyProgress(1,.06))
   await expect(canvas).toHaveAttribute('data-render-stage','1')
   await expect(canvas).toHaveAttribute('data-interference-phase','transmitter')
   expect(problems).toEqual([])

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { JOURNEY_STAGES, journeyAt } from '../../src/lib/journeyPath'
+import { JOURNEY_STAGES, JOURNEY_HEIGHT_SVH, journeyProgress, journeyAt } from '../../src/lib/journeyPath'
 import { journey } from '../../src/content/journey'
 
 describe('journey path', () => {
@@ -18,11 +18,30 @@ describe('journey path', () => {
   })
 
   it('dwells before travelling, and travel is continuous across slices', () => {
-    const slice = 1 / JOURNEY_STAGES
+    const slice = journeyProgress(1, 0)
     expect(journeyAt(slice * 0.3).travel).toBe(0)
     expect(journeyAt(slice * 0.999).travel).toBeGreaterThan(0.99)
     // Just after the boundary we are dwelling at the next stage: same camera position.
     expect(journeyAt(slice * 1.001)).toMatchObject({ index: 1, travel: 0 })
+  })
+
+  it('gives Scene02 longer holds and a slower exit without speeding up other scenes', () => {
+    const distance = (i: number, a: number, b: number) => (journeyProgress(i,b)-journeyProgress(i,a))*(JOURNEY_HEIGHT_SVH-100)
+    expect(distance(1,0,.58)).toBeCloseTo(560/6*4*.8)
+    expect(distance(1,.58,1)).toBeCloseTo(560/6*4*.2)
+    for (const i of [0,2,3,4,5]) expect(distance(i,0,1)).toBeCloseTo(560/6)
+    expect(distance(1,.54,.58)).toBeGreaterThan(20) // final array gets a readable hold before flight
+  })
+
+  it('round-trips phase coordinates and stays continuous at both Scene02 boundaries', () => {
+    for(let i=0;i<JOURNEY_STAGES;i++)for(const local of [0,.06,.19,.31,.47,.56,.58,.72,.999]){
+      const result=journeyAt(journeyProgress(i,local))
+      expect(result.index).toBe(i)
+      expect(result.local).toBeCloseTo(local)
+    }
+    const end=journeyProgress(1,1)
+    expect(journeyAt(end-1e-7).travel).toBeGreaterThan(.999)
+    expect(journeyAt(end+1e-7)).toMatchObject({index:2,travel:0})
   })
 
   it('visits every stage in order as progress increases', () => {

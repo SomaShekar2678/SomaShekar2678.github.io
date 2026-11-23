@@ -1,9 +1,10 @@
 /** Repeatable visual review. One software-rendered Chrome instance; no parallel GPU workers. */
+import {journeyProgress} from '../src/lib/journeyPath.ts'
 import {mkdirSync,writeFileSync} from 'node:fs'
 import {resolve} from 'node:path'
 import {createServer} from 'vite'
 import {chromium} from '@playwright/test'
-const root=resolve(import.meta.dirname,'..'),folder=resolve(root,'docs/review/scene02')
+const root=resolve(import.meta.dirname,'..'),folder=resolve(root,process.env.REVIEW_DIR??'docs/review/scene02')
 mkdirSync(folder,{recursive:true})
 const server=await createServer({root,server:{host:'127.0.0.1',port:5199,strictPort:true},logLevel:'error'})
 await server.listen()
@@ -17,7 +18,7 @@ try{
   page.on('response',r=>{if(r.status()>=400)errors.push(`${r.status()}: ${r.url()}`)})
   await page.goto('http://127.0.0.1:5199/scripts/journey.html')
   await page.waitForSelector('body[data-ready=true]')
-  for(const [name,progress]of [...phases.map(([n,p])=>[n,(1+p)/6] as const),['into',.88/6],['out',1.72/6]] as const){
+  for(const [name,progress]of [...phases.map(([n,p])=>[n,journeyProgress(1,p)] as const),['into',journeyProgress(0,.88)],['out',journeyProgress(1,.72)]] as const){
     const shot=await page.evaluate(p=>(window as unknown as Studio).journeyStudio.captureAt(p),progress)
     writeFileSync(resolve(folder,`${name}.webp`),Buffer.from(shot.image.split(',')[1]!,'base64'));diagnostics[name]=shot.diagnostics
   }
@@ -25,12 +26,12 @@ try{
   await page.goto('http://127.0.0.1:5199/');await page.waitForFunction(()=>document.documentElement.dataset.loading==='false')
   const section=page.locator('#journey')
   for(const [name,local]of phases){
-    const y=await section.evaluate((el,p)=>el.getBoundingClientRect().top+scrollY+((el as HTMLElement).offsetHeight-innerHeight)*p,(1+local)/6)
+    const y=await section.evaluate((el,p)=>el.getBoundingClientRect().top+scrollY+((el as HTMLElement).offsetHeight-innerHeight)*p,journeyProgress(1,local))
     await page.evaluate(target=>scrollTo({top:target,behavior:'instant'}),y);await page.waitForFunction(target=>Math.abs(scrollY-target)<2,y);await page.waitForTimeout(2200)
     await page.screenshot({path:resolve(folder,`desktop-${name}.jpg`),type:'jpeg',quality:88})
   }
   await page.setViewportSize({width:1280,height:800});await page.waitForTimeout(400)
-  const laptopY=await section.evaluate(el=>el.getBoundingClientRect().top+scrollY+((el as HTMLElement).offsetHeight-innerHeight)*1.31/6)
+  const laptopY=await section.evaluate((el,p)=>el.getBoundingClientRect().top+scrollY+((el as HTMLElement).offsetHeight-innerHeight)*p,journeyProgress(1,.31))
   await page.evaluate(target=>scrollTo({top:target,behavior:'instant'}),laptopY);await page.waitForFunction(target=>Math.abs(scrollY-target)<2,laptopY);await page.waitForTimeout(2200)
   await page.screenshot({path:resolve(folder,'laptop.jpg'),type:'jpeg',quality:88});await page.close()
   for(const [name,width,height]of [['mobile',390,844],['tablet',820,1180],['landscape',844,390]] as const){

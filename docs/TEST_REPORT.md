@@ -1,3 +1,15 @@
+# Scene02 pacing validation — 2026-11-23
+
+- `npm run check`: passed strict TypeScript, lint, **47 unit tests** and production build.
+- New timing tests verify 4× Scene02 allocation, 80% dwell, unchanged scroll distances for every other scene, inverse mapping, and boundary continuity.
+- Visual review executed with one Chrome/SwiftShader browser: 1440×900, 1280×800, touch 390×844, 820×1180 and 844×390. A–E and both neighbouring transitions captured; no recorded console/network errors or touch-layout overflow. Evidence: [review/scene02-pacing/](review/scene02-pacing/).
+- Targeted production-browser journey/overflow suite: **12 passed, 4 intentional mobile skips**, one worker, 1.2 minutes. Includes phase traversal/reversal, neighbour scenes, skip navigation, reduced motion, WebGL/asset failure and context loss. Older full-site results below remain historical.
+- Scope: weighted progress mapping, desktop section height, inverse mapping in poster/review tools, matching tests and documentation. No artwork, scene geometry, data model, other chapter pace or fallback behaviour changes.
+- Limitations: elapsed duration still depends on visitor scroll speed; fast scrollbar jumps can still skip ahead. Real phones, Firefox and Safari were not tested. No additional owner content or assets required.
+- Run locally with `npm run dev`; verify with `npm run check`. Existing pushes to main deploy through GitHub Pages. [SCENE02.md](SCENE02.md) records timing and changed files.
+
+---
+
 # Scene 02 validation — 2026-11-17
 
 Current implementation details, scientific assumptions, assets and reproduction commands: [SCENE02.md](SCENE02.md).
