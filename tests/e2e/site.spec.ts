@@ -336,7 +336,7 @@ test.describe('journey asset resilience', () => {
   })
 })
 
-test('Scene02 progresses through all five phases and preserves its neighbours', async ({ page }, info) => {
+test('Scene02 progresses through all four phases and preserves its neighbours', async ({ page }, info) => {
   test.skip(info.project.name === 'mobile', 'touch devices retain illustrated panels')
   test.setTimeout(60_000)
   const problems = watch(page)
@@ -351,7 +351,7 @@ test('Scene02 progresses through all five phases and preserves its neighbours', 
   }
   await scroll(journeyProgress(0,.3))
   await expect(canvas).toHaveAttribute('data-render-stage','0')
-  for(const [local,phase] of [[.06,'transmitter'],[.19,'fields'],[.31,'spectrum'],[.47,'receiver'],[.56,'array']] as const){
+  for(const [local,phase] of [[.06,'transmitter'],[.19,'fields'],[.31,'spectrum'],[.47,'receiver'],[.56,'receiver']] as const){
     await scroll(journeyProgress(1,local))
     await expect(canvas).toHaveAttribute('data-render-stage','1')
     await expect(canvas).toHaveAttribute('data-interference-phase',phase)

@@ -10,7 +10,7 @@ const server=await createServer({root,server:{host:'127.0.0.1',port:5199,strictP
 await server.listen()
 const browser=await chromium.launch({channel:'chrome',args:['--use-angle=swiftshader','--enable-unsafe-swiftshader']})
 type Studio=Window&{journeyStudio:{captureAt:(p:number)=>Promise<{image:string;diagnostics:unknown}>;dispose:()=>unknown}}
-const phases=[['A',.06],['B',.19],['C',.31],['D',.47],['E',.56]] as const
+const phases=[['A',.06],['B',.19],['C',.31],['D',.47]] as const
 const errors:string[]=[],diagnostics:Record<string,unknown>={}
 try{
   const page=await browser.newPage({viewport:{width:1440,height:900},deviceScaleFactor:1})

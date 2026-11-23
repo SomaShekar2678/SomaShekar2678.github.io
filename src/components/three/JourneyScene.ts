@@ -230,7 +230,7 @@ export class JourneyScene {
     }
   }
 
-  /** World 1 — transmitter → fields → spectrum → receiver → array. */
+  /** World 1 — transmitter → fields → spectrum → receiver. */
   private buildInterference(k: number) {
     this.interference = interferenceWorld(this.kit, k)
     this.interference.root.position.copy(center(1))

@@ -8,8 +8,8 @@ import { correlationExperiment, INTERFERENCE_MODEL } from '../../../lib/interfer
 const BLUE = '#70d6ff', AMBER = '#f5a452'
 /** Original models and synthetic signal illustrations. Scene-local choreography only. */
 export function interferenceWorld(kit:ModelKit, quality:number) {
-  const root=new T.Group(), ground=new T.Group(), frequency=new T.Group(), receiver=new T.Group(), bridge=new T.Group()
-  root.add(ground,frequency,receiver,bridge)
+  const root=new T.Group(), ground=new T.Group(), frequency=new T.Group(), receiver=new T.Group()
+  root.add(ground,frequency,receiver)
   const metal=kit.metal.clone();metal.color.set('#68747d');metal.roughness=.42
   const paint=new T.MeshStandardMaterial({color:'#737d75',roughness:.72,metalness:.3})
   const batches=new Map<T.Material,T.BufferGeometry[]>()
@@ -187,36 +187,23 @@ export function interferenceWorld(kit:ModelKit, quality:number) {
   screenLabel('No tracking loop / no measured lock status',12,0,-4.4)
   receiver.position.set(0,0,-1);receiver.scale.setScalar(.88)
 
-  const array=receiveArray(kit,ura(4,4,.5));array.scale.setScalar(3.25);array.position.set(0,.3,0);bridge.add(array)
-  label(bridge,'16 ELEMENTS / SPATIAL OBSERVATIONS',10,[0,.5,6],BLUE)
-  label(bridge,'NEXT / ADAPTIVE BEAMFORMING',8,[0,.4,7.5])
-  function direction(a:T.Vector3,b:T.Vector3,color:string){
-    const g=new T.BufferGeometry().setFromPoints([a,b]);bridge.add(new T.Line(g,new T.LineBasicMaterial({color,transparent:true,opacity:.7})))
-    const ring=new T.Mesh(new T.TorusGeometry(.36,.025,8,32),new T.MeshBasicMaterial({color}));ring.position.copy(a);ring.lookAt(b);bridge.add(ring)
-  }
-  direction(new T.Vector3(-6,7,-5),new T.Vector3(0,.7,0),BLUE)
-  direction(new T.Vector3(8,2,-2),new T.Vector3(0,.7,0),AMBER)
-  field(new T.Vector3(-6,7,-5),new T.Vector3(0,.7,0),BLUE,false,bridge)
-  field(new T.Vector3(8,2,-2),new T.Vector3(0,.7,0),AMBER,true,bridge)
-  label(bridge,'DESIRED',3,[-6,7.8,-5],BLUE);label(bridge,'INTERFERENCE',4,[8,3,-2],AMBER)
   const note=label(root,'ILLUSTRATIVE FIELDS + SYNTHETIC DATA / NOT TO SCALE',12,[0,-3,5])
   note.renderOrder=5;note.material.depthTest=false
   let lastDb=-1, moving=false
   function update(local:number,elapsed:number){
     time.value=elapsed;attack.value=smoothstep(.02,.19,local);fieldGain.value=1+smoothstep(.1,.19,local)*.7
-    const enterSpectrum=smoothstep(.22,.265,local),enterReceiver=smoothstep(.365,.4,local),enterArray=smoothstep(.485,.54,local)
-    moving=(enterSpectrum>0&&enterSpectrum<1)||(enterReceiver>0&&enterReceiver<1)||(enterArray>0&&enterArray<1)
+    const enterSpectrum=smoothstep(.22,.265,local),enterReceiver=smoothstep(.365,.4,local)
+    moving=(enterSpectrum>0&&enterSpectrum<1)||(enterReceiver>0&&enterReceiver<1)
     ground.visible=enterSpectrum<1;ground.position.y=-enterSpectrum*12
     frequency.visible=enterSpectrum>0&&enterReceiver<1;frequency.scale.setScalar(.5+.22*enterSpectrum);frequency.position.y=(1-enterSpectrum)*-12-enterReceiver*14
     strength.value=120*smoothstep(.24,.365,local)
     mode.value=local<.29?0:local<.33?2:1
     modeLabels.forEach((l,i)=>{l.visible=i===mode.value})
-    receiver.visible=enterReceiver>0&&enterArray<1;receiver.position.y=(1-enterReceiver)*-12-enterArray*13
+    receiver.visible=enterReceiver>0;receiver.position.y=(1-enterReceiver)*-12
     const db=local<.405?0:local<.43?15:local<.46?30:45
     strengthLabels.forEach((l,i)=>{l.visible=i===[0,15,30,45].indexOf(db)})
     if(db!==lastDb){const values=frames[db]!;for(let i=0;i<65;i++){data[i*3]=4.8+experiment.lags[i]!/4*3.8;data[i*3+1]=-1.7+values[i]!/yMax*3.2;data[i*3+2]=.07}traceGeo.attributes.position!.needsUpdate=true;traceGeo.computeBoundingSphere();lastDb=db}
-    bridge.visible=enterArray>0;bridge.position.y=(1-enterArray)*-10
-    return local<.12?'transmitter':local<.24?'fields':local<.38?'spectrum':local<.51?'receiver':'array'
+    return local<.12?'transmitter':local<.24?'fields':local<.38?'spectrum':'receiver'
   }
   return {root,update,get moving(){return moving}}
 }

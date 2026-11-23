@@ -1,6 +1,16 @@
 # Scene 02 — The Invisible War
 
-## Current pacing — 2026-11-23, shortened after review
+## Current sequence — array preview removed, 2026-11-23
+
+The owner removed the standalone enlarged array preview from Scene02. The current sequence is transmitter → fields → spectrum → receiver, followed directly by the existing flight into Scene03. The preview geometry, its two field sources and its labels are deleted. The small receiving array in the ground/transmitter composition remains; Scene03's beamforming visualization is unchanged.
+
+The flight begins at visual coordinate 0.485, where the deleted preview previously began. Scene02 now uses 2.2 scroll units (1.5 dwell + 0.7 flight); the desktop journey is 772svh. This removes the deleted chapter's interval, preserves the previous exit distance and keeps the remaining chapters at essentially the same pace. No camera route, page copy or mobile panel changes.
+
+Files: `src/components/three/journey/interference.ts`, its builder comment in `JourneyScene.ts`, `src/lib/journeyPath.ts`, the matching unit/browser tests, and `scripts/review-scene02.ts` (four phases). No new assets or owner input. Run `npm run dev`; build with `npm run build`; deployment remains GitHub Pages on pushes to main. Earlier pacing records below are historical.
+
+Validation for preview removal: build, type checking, lint and 47 unit tests passed. The grouped journey browser run passed both static-panel checks but timed out on the desktop loader and skip checks while only 231 MB memory was available and swap was full. Both desktop checks then passed individual retries without production changes: four-phase progression/reversal/neighbours (21.4s) and rendered-frame/skip navigation (26.8s). Two desktop-only mobile cases remain intentionally skipped. Chrome/SwiftShader renders at 1440×900 confirm the receiver, outgoing flight and unchanged Scene03; no console errors. Evidence: `review/scene02-no-preview/`. Mobile panels passed at Pixel7 emulation; no real-device or other-browser claim.
+
+## Previous pacing — 2026-11-23, shortened after review
 
 The four-unit revision below felt too long. Scene02 now uses **2.5 scroll units and 72% dwell**: 37.5% less total scroll, 43.75% shorter internal phases, and a 12.5% shorter outgoing flight than that revision. This keeps approximately 3.1× the original phase distance and 1.67× the original exit distance. Total desktop journey height is now **800svh**. Smoothstep transitions, camera easing, other scenes and fallback panels are unchanged. No additional assets or content are required.
 
